@@ -164,6 +164,13 @@ body::after{content:'';position:fixed;bottom:-10%;right:-10%;width:40%;height:40
 .gc-grade{font-family:'Zen Antique',serif;font-size:20px;letter-spacing:.15em;color:var(--white);margin-bottom:10px;}
 .gc-desc{font-size:13px;line-height:2.1;color:var(--text);letter-spacing:.04em;text-align:left;}
 
+/* Match CTA (相手リンク経由) */
+.match-cta-block{background:linear-gradient(135deg,#12081a,#1e1030);border:1px solid rgba(155,127,212,.35);padding:24px 20px;position:relative;overflow:hidden;text-align:center;}
+.match-cta-block::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(155,127,212,.08),transparent 60%);pointer-events:none;}
+.mcta-label{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--night2);opacity:.7;margin-bottom:8px;position:relative;}
+.mcta-title{font-family:"Zen Antique",serif;font-size:20px;letter-spacing:.15em;color:var(--white);margin-bottom:8px;position:relative;}
+.mcta-sub{font-size:12px;color:var(--muted);line-height:1.9;position:relative;}
+
 /* Paywall */
 .paywall-block{width:100%;margin-bottom:12px;background:linear-gradient(135deg,#0f0b18,#180e20);border:1px solid rgba(224,96,160,.3);padding:28px 20px;position:relative;overflow:hidden;}
 .paywall-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(224,96,160,.07),transparent 60%);pointer-events:none;}
@@ -510,6 +517,16 @@ body::after{content:'';position:fixed;bottom:-10%;right:-10%;width:40%;height:40
     </div>
   </div>
 
+  <!-- 相手リンク経由の場合のみ表示される相性ボタン -->
+  <div id="matchCta" style="display:none;width:100%;margin-bottom:12px">
+    <div class="match-cta-block">
+      <div class="mcta-label">✦ 相手の診断結果と照合する</div>
+      <div class="mcta-title">2人の相性を見る</div>
+      <div class="mcta-sub" id="mctaSub"></div>
+      <button class="btn btn-main" style="margin-top:16px" onclick="showMatch()">相性結果を見る →</button>
+    </div>
+  </div>
+
   <div class="chain-block">
     <div class="cb-tag">💌 気になる人に送る</div>
     <div class="cb-title">相性を確かめたい人に送ろう</div>
@@ -841,7 +858,8 @@ function answer(v){
 
 function finish(){
   myDay=gd(ds); myNight=gn(ns);
-  if(pDay&&pNight){ showMatch(); } else { showSolo(); }
+  // 相手リンク経由でも、まず自分の結果を全部表示してから相性へ
+  showSolo();
 }
 
 function showSolo(){
@@ -874,6 +892,16 @@ function showSolo(){
   nWeak.innerHTML=na.weak.map(s=>`<li>${s}</li>`).join('');
   const nAru=document.getElementById('dNightAru');
   nAru.innerHTML=na.aru_night.map(s=>`<li>${s}</li>`).join('');
+
+  // 相手リンク経由なら相性CTAを表示
+  if(pDay && pNight){
+    const cta = document.getElementById('matchCta');
+    const da = getDayAnimal(pDay), na = getNightAnimal(pNight);
+    document.getElementById('mctaSub').textContent =
+      '相手: ' + da.emoji + da.animal + ' × ' + na.emoji + na.animal;
+    cta.style.display = 'block';
+    // ソロのshareブロックも非表示（相手あり時はmatch側でシェア）
+  }
 
   show('solo');
   checkUnlocked();
