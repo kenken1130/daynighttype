@@ -3,1449 +3,1099 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DayNight Type — 昼と夜の掛け算診断</title>
+<title>DayNight Type — 昼と夜の相性診断</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Zen+Antique&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #08070a;
-  --surface: #110f15;
-  --card: #16131c;
-  --border: #2a2333;
-  --day: #e8b86d;
-  --night: #8b6fc4;
-  --day2: #f0d080;
-  --night2: #c084e8;
-  --text: #ece6f4;
-  --muted: #6b6075;
-  --white: #f8f4ff;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Noto Sans JP', sans-serif;
-  font-weight: 300;
-  min-height: 100vh;
-  overflow-x: hidden;
-  cursor: none;
-}
-
-/* Custom cursor */
-.cursor {
-  position: fixed;
-  width: 8px; height: 8px;
-  background: var(--night2);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%,-50%);
-  transition: width 0.15s, height 0.15s, opacity 0.15s;
-  mix-blend-mode: screen;
-}
-.cursor-ring {
-  position: fixed;
-  width: 32px; height: 32px;
-  border: 1px solid rgba(192,132,232,0.3);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9998;
-  transform: translate(-50%,-50%);
-  transition: all 0.08s ease;
-}
-
-/* Starfield */
-.stars {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-.star {
-  position: absolute;
-  background: white;
-  border-radius: 50%;
-  animation: twinkle var(--d,3s) var(--delay,0s) infinite alternate;
-}
-@keyframes twinkle {
-  from { opacity: var(--min,0.1); transform: scale(1); }
-  to   { opacity: var(--max,0.6); transform: scale(1.3); }
-}
-
-/* Ambient glow */
-body::before {
-  content:'';
-  position: fixed;
-  top: -30%; left: -20%;
-  width: 60%; height: 60%;
-  background: radial-gradient(ellipse, rgba(139,111,196,0.07) 0%, transparent 70%);
-  pointer-events: none; z-index: 0;
-}
-body::after {
-  content:'';
-  position: fixed;
-  bottom: -20%; right: -20%;
-  width: 50%; height: 50%;
-  background: radial-gradient(ellipse, rgba(232,184,109,0.05) 0%, transparent 70%);
-  pointer-events: none; z-index: 0;
-}
-
-/* Screens */
-.screen {
-  display: none;
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  animation: fadeUp 0.5s ease forwards;
-}
-.screen.active { display: flex; flex-direction: column; }
-@keyframes fadeUp {
-  from { opacity:0; transform: translateY(16px); }
-  to   { opacity:1; transform: translateY(0); }
-}
-
-/* ── HOME ── */
-#home {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 60px 24px;
-  gap: 0;
-}
-
-.home-badge {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 11px;
-  letter-spacing: 0.5em;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 32px;
-}
-
-.home-logo {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-}
-
-.logo-day {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(44px, 12vw, 80px);
-  font-weight: 700;
-  color: var(--day);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  text-shadow: 0 0 40px rgba(232,184,109,0.3);
-}
-
-.logo-x {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(28px, 7vw, 52px);
-  font-weight: 400;
-  color: var(--muted);
-  margin: 0 4px;
-  opacity: 0.5;
-  align-self: center;
-}
-
-.logo-night {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(44px, 12vw, 80px);
-  font-weight: 700;
-  color: var(--night);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  text-shadow: 0 0 40px rgba(139,111,196,0.3);
-}
-
-.home-tagline {
-  font-family: 'Zen Antique', serif;
-  font-size: clamp(13px, 3.5vw, 17px);
-  color: var(--text);
-  letter-spacing: 0.15em;
-  margin-bottom: 12px;
-  opacity: 0.85;
-}
-
-.home-sub {
-  font-size: 12px;
-  color: var(--muted);
-  letter-spacing: 0.1em;
-  margin-bottom: 48px;
-  line-height: 1.8;
-}
-
-.axis-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  max-width: 340px;
-  width: 100%;
-  margin: 0 auto 48px;
-}
-
-.axis-item {
-  padding: 14px 12px;
-  border: 1px solid var(--border);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.axis-item::before {
-  content:'';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--c1,transparent) 0%, transparent 60%);
-  opacity: 0.04;
-}
-.axis-item.day { --c1: var(--day); }
-.axis-item.night { --c1: var(--night); }
-
-.axis-label {
-  font-size: 9px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.axis-item.day .axis-label { color: var(--day); }
-.axis-item.night .axis-label { color: var(--night2); }
-
-.axis-vs {
-  font-family: 'Playfair Display', serif;
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.05em;
-}
-.axis-vs b { color: var(--text); font-weight: 400; font-style: italic; }
-
-.divider {
-  display: flex; align-items: center; gap: 14px;
-  max-width: 320px; width: 100%; margin: 0 auto 32px;
-}
-.divider::before, .divider::after {
-  content:''; flex:1; height:1px; background: var(--border);
-}
-.divider-icon { color: var(--muted); font-size: 14px; }
-
-.btn {
-  padding: 15px 40px;
-  font-family: 'Zen Antique', serif;
-  font-size: 14px;
-  letter-spacing: 0.25em;
-  border: none;
-  cursor: pointer;
-  transition: all 0.25s;
-  position: relative;
-  overflow: hidden;
-}
-.btn::after {
-  content:'';
-  position: absolute;
-  inset: 0;
-  background: white;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.btn:hover::after { opacity: 0.06; }
-.btn:hover { transform: translateY(-2px); }
-
-.btn-day {
-  background: linear-gradient(135deg, #b8832a, var(--day));
-  color: #0a0800;
-  box-shadow: 0 4px 24px rgba(232,184,109,0.2);
-}
-.btn-day:hover { box-shadow: 0 8px 32px rgba(232,184,109,0.35); }
-
-.btn-night {
-  background: linear-gradient(135deg, #5b3f9a, var(--night));
-  color: white;
-  box-shadow: 0 4px 24px rgba(139,111,196,0.25);
-}
-.btn-night:hover { box-shadow: 0 8px 32px rgba(139,111,196,0.4); }
-
-.btn-match {
-  background: linear-gradient(135deg, #5b3f9a, #c06040);
-  color: white;
-  box-shadow: 0 4px 24px rgba(150,80,120,0.3);
-}
-
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  padding: 12px 32px;
-}
-.btn-ghost:hover { border-color: var(--muted); color: var(--text); }
-
-.home-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
-  max-width: 280px;
-}
-
-/* ── QUIZ ── */
-#quiz {
-  padding: 0;
-  max-width: 520px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.quiz-header {
-  padding: 36px 24px 0;
-  margin-bottom: 32px;
-}
-
-.quiz-mode-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  border: 1px solid;
-  margin-bottom: 24px;
-}
-.quiz-mode-badge.day { border-color: rgba(232,184,109,0.3); color: var(--day); }
-.quiz-mode-badge.night { border-color: rgba(139,111,196,0.3); color: var(--night2); }
-
-.quiz-progress-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 10px;
-}
-.quiz-progress-text {
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--muted);
-}
-.quiz-progress-count {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 28px;
-  line-height: 1;
-}
-.quiz-progress-count.day { color: var(--day); }
-.quiz-progress-count.night { color: var(--night2); }
-.quiz-progress-count span { font-size: 14px; color: var(--muted); font-style: normal; }
-
-.prog-bar {
-  height: 2px;
-  background: var(--border);
-  position: relative;
-  overflow: hidden;
-}
-.prog-fill {
-  height: 100%;
-  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
-}
-.prog-fill.day { background: linear-gradient(to right, #b8832a, var(--day2)); }
-.prog-fill.night { background: linear-gradient(to right, #5b3f9a, var(--night2)); }
-
-.quiz-body {
-  padding: 0 24px 48px;
-}
-
-.q-axis-tag {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 10px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-  opacity: 0.6;
-}
-.q-axis-tag.day { color: var(--day); }
-.q-axis-tag.night { color: var(--night2); }
-
-.q-question {
-  font-family: 'Zen Antique', serif;
-  font-size: clamp(15px, 4vw, 19px);
-  line-height: 1.9;
-  color: var(--white);
-  margin-bottom: 32px;
-  letter-spacing: 0.04em;
-}
-
-.q-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.choice {
-  padding: 16px 20px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'Noto Sans JP', sans-serif;
-  font-weight: 300;
-  font-size: 13px;
-  line-height: 1.7;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.18s ease;
-  position: relative;
-  overflow: hidden;
-}
-.choice .choice-bar {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 0;
-  transition: width 0.18s ease;
-}
-.choice.day-choice .choice-bar { background: linear-gradient(to bottom, rgba(232,184,109,0.12), rgba(240,208,128,0.08)); }
-.choice.night-choice .choice-bar { background: linear-gradient(to bottom, rgba(139,111,196,0.12), rgba(192,132,232,0.08)); }
-.choice:hover .choice-bar { width: 100%; }
-.choice.day-choice:hover { border-color: rgba(232,184,109,0.5); }
-.choice.night-choice:hover { border-color: rgba(139,111,196,0.5); }
-.choice:hover { transform: translateX(3px); }
-
-.choice-side {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  margin-bottom: 5px;
-  opacity: 0.6;
-}
-.choice.day-choice .choice-side { color: var(--day); }
-.choice.night-choice .choice-side { color: var(--night2); }
-
-.choice-text { position: relative; }
-
-/* ── RESULT ── */
-#result {
-  align-items: center;
-  text-align: center;
-  padding: 52px 24px 80px;
-  max-width: 520px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.result-mode-badge {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 11px;
-  letter-spacing: 0.4em;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 28px;
-}
-
-.result-code-wrap {
-  margin-bottom: 8px;
-}
-
-.result-code {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(60px, 18vw, 96px);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  line-height: 1;
-}
-.result-code.day { 
-  color: var(--day);
-  text-shadow: 0 0 60px rgba(232,184,109,0.4);
-}
-.result-code.night { 
-  color: var(--night2);
-  text-shadow: 0 0 60px rgba(192,132,232,0.4);
-}
-
-.result-typename {
-  font-family: 'Zen Antique', serif;
-  font-size: clamp(20px, 5.5vw, 28px);
-  color: var(--white);
-  letter-spacing: 0.12em;
-  margin-bottom: 4px;
-}
-
-.result-typeen {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 13px;
-  color: var(--muted);
-  letter-spacing: 0.2em;
-  margin-bottom: 28px;
-}
-
-.result-emoji {
-  font-size: 44px;
-  margin-bottom: 20px;
-  display: block;
-  filter: drop-shadow(0 0 16px rgba(255,255,255,0.2));
-}
-
-.result-desc {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 24px;
-  text-align: left;
-  margin-bottom: 24px;
-  width: 100%;
-}
-
-.result-desc-head {
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 12px;
-}
-
-.result-desc-text {
-  font-size: 13px;
-  line-height: 2;
-  letter-spacing: 0.05em;
-  color: var(--text);
-}
-
-.result-axes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  width: 100%;
-  margin-bottom: 32px;
-}
-
-.result-axis-item {
-  padding: 12px;
-  border: 1px solid var(--border);
-  text-align: center;
-}
-
-.result-axis-label {
-  font-size: 9px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-.result-axis-val {
-  font-family: 'Playfair Display', serif;
-  font-size: 15px;
-  font-style: italic;
-}
-.result-axis-val.day { color: var(--day); }
-.result-axis-val.night { color: var(--night2); }
-
-.copy-banner {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 16px 20px;
-  width: 100%;
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.copy-banner-label {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.copy-banner-code {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  letter-spacing: 0.2em;
-}
-.copy-banner-code.day { color: var(--day); }
-.copy-banner-code.night { color: var(--night2); }
-
-.copy-btn {
-  margin-top: 8px;
-  padding: 8px 20px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  cursor: pointer;
-  align-self: flex-start;
-  transition: all 0.2s;
-}
-.copy-btn:hover { border-color: var(--muted); color: var(--text); }
-.copy-btn.copied { color: #6dbe8d; border-color: #6dbe8d; }
-
-.result-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 280px;
-}
-
-/* ── MATCH ── */
-#match {
-  align-items: center;
-  text-align: center;
-  padding: 52px 24px 80px;
-  max-width: 520px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.match-title {
-  font-family: 'Zen Antique', serif;
-  font-size: 22px;
-  letter-spacing: 0.2em;
-  color: var(--white);
-  margin-bottom: 8px;
-}
-
-.match-sub {
-  font-size: 12px;
-  color: var(--muted);
-  letter-spacing: 0.1em;
-  margin-bottom: 40px;
-  line-height: 2;
-}
-
-.match-input-section {
-  width: 100%;
-  margin-bottom: 28px;
-}
-
-.match-person-label {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-  text-align: left;
-}
-.match-person-label.p1 { color: var(--day); }
-.match-person-label.p2 { color: var(--night2); }
-
-.code-input-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.code-input {
-  padding: 14px 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 20px;
-  letter-spacing: 0.3em;
-  text-align: center;
-  text-transform: uppercase;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.code-input::placeholder { color: var(--muted); opacity: 0.4; font-size: 16px; }
-.code-input.day-input:focus { border-color: rgba(232,184,109,0.5); }
-.code-input.night-input:focus { border-color: rgba(139,111,196,0.5); }
-
-.code-input-hint {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.15em;
-  text-align: left;
-  margin-bottom: 20px;
-}
-
-/* Match result */
-.match-result-card {
-  width: 100%;
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 32px 24px;
-  margin-bottom: 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-.match-result-card::before {
-  content:'';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(232,184,109,0.04), rgba(139,111,196,0.04));
-  pointer-events: none;
-}
-
-.match-score-wrap {
-  margin-bottom: 20px;
-}
-
-.match-score-label {
-  font-size: 10px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.match-score {
-  font-family: 'Playfair Display', serif;
-  font-size: 72px;
-  font-weight: 700;
-  line-height: 1;
-  background: linear-gradient(135deg, var(--day), var(--night2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.match-score-unit {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
-  color: var(--muted);
-  font-style: italic;
-  -webkit-text-fill-color: var(--muted);
-}
-
-.match-grade {
-  font-family: 'Zen Antique', serif;
-  font-size: 22px;
-  letter-spacing: 0.15em;
-  color: var(--white);
-  margin-bottom: 16px;
-}
-
-.match-desc {
-  font-size: 13px;
-  line-height: 2;
-  color: var(--text);
-  letter-spacing: 0.04em;
-  text-align: left;
-}
-
-.match-bars {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 28px;
-}
-
-.match-bar-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.match-bar-label {
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  color: var(--muted);
-  width: 80px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.match-bar-track {
-  flex: 1;
-  height: 3px;
-  background: var(--border);
-  position: relative;
-  overflow: hidden;
-}
-
-.match-bar-fill {
-  height: 100%;
-  transition: width 1s cubic-bezier(0.4,0,0.2,1) 0.3s;
-}
-
-.match-bar-val {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 12px;
-  color: var(--text);
-  width: 32px;
-  flex-shrink: 0;
-}
-
-.share-card {
-  width: 100%;
-  background: linear-gradient(135deg, #0d0b12, #14101e);
-  border: 1px solid var(--border);
-  padding: 28px 24px;
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.share-card::before {
-  content:'';
-  position: absolute;
-  top: -40%; left: -20%;
-  width: 140%; height: 140%;
-  background: radial-gradient(ellipse at 30% 30%, rgba(232,184,109,0.05) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 70%, rgba(139,111,196,0.07) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-.share-codes {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  margin-bottom: 12px;
-  position: relative;
-}
-
-.share-x { color: var(--muted); opacity: 0.5; margin: 0 8px; font-size: 18px; }
-
-.share-score-line {
-  font-family: 'Zen Antique', serif;
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin-bottom: 8px;
-  position: relative;
-}
-
-.share-hashtags {
-  font-size: 11px;
-  color: var(--night2);
-  opacity: 0.6;
-  letter-spacing: 0.05em;
-  position: relative;
-}
-
-/* Back btn */
-.back-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  cursor: pointer;
-  padding: 16px 24px;
-  transition: color 0.2s;
-  align-self: flex-start;
-}
-.back-btn:hover { color: var(--text); }
-.back-btn::before { content: '←'; }
-
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 28px;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  opacity: 0;
-  transition: all 0.3s;
-  z-index: 100;
-  pointer-events: none;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+:root{
+  --bg:#08070b;--surface:#100e16;--card:#161220;--border:#251e35;
+  --day:#e8b86d;--day2:#f0d080;--night:#9b7fd4;--night2:#c084e8;
+  --text:#ece6f4;--muted:#665870;--white:#f5f0ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.star{position:absolute;background:white;border-radius:50%;animation:tw var(--d,3s) var(--delay,0s) infinite alternate;}
+@keyframes tw{from{opacity:var(--min,.05)}to{opacity:var(--max,.45)}}
+body::before{content:'';position:fixed;top:-20%;left:-10%;width:50%;height:50%;background:radial-gradient(ellipse,rgba(155,127,212,.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;bottom:-10%;right:-10%;width:40%;height:40%;background:radial-gradient(ellipse,rgba(232,184,109,.04) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.screen{display:none;position:relative;z-index:1;min-height:100vh;animation:fadeUp .4s ease;}
+.screen.active{display:flex;flex-direction:column;align-items:center;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* HOME */
+#home{justify-content:center;text-align:center;padding:64px 24px;}
+.eyebrow{font-family:'Playfair Display',serif;font-style:italic;font-size:11px;letter-spacing:.45em;color:var(--muted);text-transform:uppercase;margin-bottom:24px;}
+.logo{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(52px,14vw,88px);line-height:1;letter-spacing:-.02em;margin-bottom:10px;}
+.logo .d{color:var(--day);text-shadow:0 0 40px rgba(232,184,109,.3);}
+.logo .x{color:var(--muted);opacity:.35;font-size:.55em;margin:0 4px;}
+.logo .n{color:var(--night);text-shadow:0 0 40px rgba(155,127,212,.3);}
+.tagline{font-family:'Zen Antique',serif;font-size:clamp(13px,3.5vw,17px);letter-spacing:.15em;color:var(--white);opacity:.8;margin-bottom:10px;}
+.sub{font-size:12px;color:var(--muted);line-height:2;letter-spacing:.05em;margin-bottom:36px;}
+.animal-preview{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;max-width:300px;margin:0 auto 36px;}
+.ap{font-size:26px;opacity:.6;transition:opacity .2s;cursor:default;}
+.ap:hover{opacity:1;}
+.flow{display:flex;align-items:center;max-width:340px;width:100%;margin:0 auto 40px;}
+.flow-step{flex:1;text-align:center;padding:12px 8px;border:1px solid var(--border);font-size:10px;letter-spacing:.1em;color:var(--muted);line-height:1.8;}
+.flow-step b{display:block;font-size:12px;font-family:'Playfair Display',serif;font-style:italic;font-weight:400;margin-bottom:3px;}
+.flow-step.ds b{color:var(--day);}
+.flow-step.ns b{color:var(--night2);}
+.flow-step.ms b{color:#c060a0;}
+.farr{color:var(--border);font-size:11px;flex-shrink:0;padding:0 2px;}
+
+/* INVITE */
+#invite{justify-content:center;text-align:center;padding:56px 24px;}
+.inv-pulse{font-size:52px;margin-bottom:16px;display:block;animation:ip 2s ease infinite;}
+@keyframes ip{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.inv-title{font-family:'Zen Antique',serif;font-size:clamp(17px,5vw,22px);letter-spacing:.15em;color:var(--white);margin-bottom:10px;}
+.inv-sub{font-size:13px;color:var(--muted);line-height:2.1;margin-bottom:28px;}
+.partner-preview{width:100%;max-width:320px;background:var(--card);border:1px solid var(--border);padding:20px;margin-bottom:28px;position:relative;overflow:hidden;}
+.partner-preview::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(155,127,212,.06),transparent 70%);pointer-events:none;}
+.pp-label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.pp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pp-type{padding:14px 10px;border:1px solid var(--border);text-align:center;}
+.pp-mode{font-size:9px;letter-spacing:.25em;text-transform:uppercase;margin-bottom:8px;}
+.pp-type.d .pp-mode{color:var(--day);}
+.pp-type.n .pp-mode{color:var(--night2);}
+.pp-animal{font-size:36px;margin-bottom:6px;display:block;}
+.pp-name{font-family:'Zen Antique',serif;font-size:13px;letter-spacing:.08em;color:var(--white);margin-bottom:3px;}
+.pp-sub{font-size:10px;color:var(--muted);}
+
+/* QUIZ */
+#quiz{padding:0;max-width:520px;width:100%;}
+.quiz-top{padding:32px 24px 0;width:100%;margin-bottom:28px;}
+.phase-bar{display:flex;gap:6px;margin-bottom:20px;}
+.pp2{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .4s;}
+.pp2.ad{background:linear-gradient(to right,#b8832a,var(--day2));}
+.pp2.dd{background:var(--day);}
+.pp2.an{background:linear-gradient(to right,#6b40a0,var(--night2));}
+.phase-lbl{font-family:'Playfair Display',serif;font-style:italic;font-size:11px;letter-spacing:.35em;text-transform:uppercase;margin-bottom:16px;}
+.phase-lbl.d{color:var(--day);}
+.phase-lbl.n{color:var(--night2);}
+.prog-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.prog-t{font-size:11px;letter-spacing:.2em;color:var(--muted);}
+.prog-n{font-family:'Playfair Display',serif;font-style:italic;font-size:26px;}
+.prog-n.d{color:var(--day);}
+.prog-n.n{color:var(--night2);}
+.prog-n span{font-size:13px;color:var(--muted);font-style:normal;}
+.prog-bar{height:2px;background:var(--border);overflow:hidden;}
+.prog-fill{height:100%;transition:width .4s cubic-bezier(.4,0,.2,1);}
+.prog-fill.d{background:linear-gradient(to right,#b8832a,var(--day2));}
+.prog-fill.n{background:linear-gradient(to right,#6b40a0,var(--night2));}
+.quiz-body{padding:0 24px 60px;width:100%;}
+.q-axis{font-family:'Playfair Display',serif;font-style:italic;font-size:10px;letter-spacing:.32em;text-transform:uppercase;margin-bottom:12px;opacity:.6;}
+.q-axis.d{color:var(--day);}
+.q-axis.n{color:var(--night2);}
+.q-text{font-family:'Zen Antique',serif;font-size:clamp(15px,4vw,19px);line-height:1.9;color:var(--white);margin-bottom:28px;letter-spacing:.04em;}
+.choices{display:flex;flex-direction:column;gap:10px;}
+.choice{padding:16px 20px;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:13px;line-height:1.7;cursor:pointer;text-align:left;transition:all .18s ease;position:relative;overflow:hidden;}
+.cbg{position:absolute;inset:0;opacity:0;transition:opacity .18s;}
+.choice.dc .cbg{background:linear-gradient(135deg,rgba(232,184,109,.08),transparent);}
+.choice.nc .cbg{background:linear-gradient(135deg,rgba(155,127,212,.1),transparent);}
+.choice:hover .cbg{opacity:1;}
+.choice.dc:hover{border-color:rgba(232,184,109,.4);transform:translateX(3px);}
+.choice.nc:hover{border-color:rgba(155,127,212,.4);transform:translateX(3px);}
+.clbl{font-family:'Playfair Display',serif;font-style:italic;font-size:10px;letter-spacing:.2em;margin-bottom:5px;opacity:.65;position:relative;}
+.choice.dc .clbl{color:var(--day);}
+.choice.nc .clbl{color:var(--night2);}
+.ctxt{position:relative;}
+
+/* PHASE TRANSITION */
+.pt{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s;text-align:center;padding:32px;}
+.pt.show{opacity:1;pointer-events:all;}
+.pt-icon{font-size:56px;margin-bottom:20px;animation:ptp 1.5s ease infinite;}
+@keyframes ptp{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.pt-head{font-family:'Zen Antique',serif;font-size:22px;letter-spacing:.15em;color:var(--white);margin-bottom:10px;}
+.pt-body{font-size:13px;color:var(--muted);line-height:2;margin-bottom:28px;}
+
+/* SOLO RESULT */
+#solo{padding:48px 24px 80px;max-width:520px;width:100%;text-align:center;}
+.sec-title{font-family:'Zen Antique',serif;font-size:20px;letter-spacing:.2em;color:var(--white);margin-bottom:24px;}
+
+.animal-reveal{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-bottom:24px;}
+.ar-card{padding:24px 16px;border:1px solid var(--border);text-align:center;position:relative;overflow:hidden;cursor:default;}
+.ar-card::before{content:'';position:absolute;inset:0;opacity:.05;pointer-events:none;}
+.ar-card.d::before{background:radial-gradient(ellipse at 50% 0%,var(--day),transparent);}
+.ar-card.n::before{background:radial-gradient(ellipse at 50% 0%,var(--night),transparent);}
+.ar-mode{font-family:'Playfair Display',serif;font-style:italic;font-size:10px;letter-spacing:.28em;text-transform:uppercase;margin-bottom:10px;}
+.ar-card.d .ar-mode{color:var(--day);}
+.ar-card.n .ar-mode{color:var(--night2);}
+.ar-emoji{font-size:48px;margin-bottom:8px;display:block;transition:transform .3s;filter:drop-shadow(0 0 12px rgba(255,255,255,.15));}
+.ar-card:hover .ar-emoji{transform:scale(1.12);}
+.ar-animal{font-family:'Zen Antique',serif;font-size:15px;letter-spacing:.1em;color:var(--white);margin-bottom:4px;}
+.ar-type{font-family:'Playfair Display',serif;font-style:italic;font-size:11px;color:var(--muted);margin-bottom:8px;}
+.ar-desc{font-size:11px;color:var(--muted);line-height:1.9;letter-spacing:.03em;}
+
+/* Chain blocks */
+.chain-block{width:100%;background:linear-gradient(135deg,#0d0b14,#14101e);border:1px solid var(--border);padding:22px 20px;margin-bottom:10px;position:relative;overflow:hidden;}
+.chain-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 30%,rgba(232,184,109,.04),transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(155,127,212,.05),transparent 50%);pointer-events:none;}
+.cb-tag{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;position:relative;}
+.cb-title{font-family:'Zen Antique',serif;font-size:15px;letter-spacing:.1em;color:var(--white);margin-bottom:5px;position:relative;}
+.cb-sub{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:14px;position:relative;}
+
+/* MATCH RESULT */
+#match{padding:48px 24px 80px;max-width:520px;width:100%;text-align:center;}
+
+/* Animal vs */
+.animal-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;width:100%;margin-bottom:16px;}
+.av-person{padding:16px 10px;border:1px solid var(--border);text-align:center;}
+.av-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.av-day-emoji{font-size:28px;display:block;margin-bottom:2px;}
+.av-night-emoji{font-size:20px;display:block;opacity:.7;}
+.av-names{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.6;}
+.av-names .dn{color:var(--day);}
+.av-names .nn{color:var(--night2);}
+.av-mid{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--muted);opacity:.45;}
+
+.scores{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;margin-bottom:16px;}
+.sb{padding:18px 10px;border:1px solid var(--border);text-align:center;position:relative;overflow:hidden;}
+.sb::before{content:'';position:absolute;inset:0;opacity:.05;pointer-events:none;}
+.sb.d::before{background:var(--day);}
+.sb.n::before{background:var(--night);}
+.sb.t::before{background:linear-gradient(135deg,var(--day),var(--night));}
+.sb-lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.sb-num{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(26px,7vw,36px);line-height:1;}
+.sb.d .sb-num{color:var(--day);}
+.sb.n .sb-num{color:var(--night2);}
+.sb.t .sb-num{background:linear-gradient(135deg,var(--day),var(--night2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sb-pct{font-size:11px;color:var(--muted);font-family:'Playfair Display',serif;font-style:italic;}
+
+.grade-card{width:100%;background:var(--card);border:1px solid var(--border);padding:24px 20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.grade-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,184,109,.03),rgba(155,127,212,.04));pointer-events:none;}
+.gc-grade{font-family:'Zen Antique',serif;font-size:20px;letter-spacing:.15em;color:var(--white);margin-bottom:10px;}
+.gc-desc{font-size:13px;line-height:2.1;color:var(--text);letter-spacing:.04em;text-align:left;}
+
+/* Paywall */
+.paywall-block{width:100%;margin-bottom:12px;background:linear-gradient(135deg,#0f0b18,#180e20);border:1px solid rgba(224,96,160,.3);padding:28px 20px;position:relative;overflow:hidden;}
+.paywall-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(224,96,160,.07),transparent 60%);pointer-events:none;}
+.pw-lock{font-size:36px;text-align:center;margin-bottom:10px;}
+.pw-title{font-family:'Zen Antique',serif;font-size:18px;letter-spacing:.15em;color:var(--white);text-align:center;margin-bottom:6px;}
+.pw-price{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:#e060a0;text-align:center;margin-bottom:20px;text-shadow:0 0 24px rgba(224,96,160,.4);}
+.pw-items{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.pw-item{font-size:13px;color:var(--text);letter-spacing:.04em;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);}
+.btn-pay{display:block;width:100%;padding:16px 20px;background:linear-gradient(135deg,#a02060,#e04080);color:white;font-family:'Zen Antique',serif;font-size:14px;letter-spacing:.2em;text-align:center;text-decoration:none;margin-bottom:20px;transition:all .25s;box-shadow:0 4px 24px rgba(200,60,100,.3);}
+.btn-pay:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(200,60,100,.45);}
+.pw-code-area{border-top:1px solid var(--border);padding-top:16px;}
+.pw-code-label{font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px;text-transform:uppercase;}
+.pw-code-row{display:flex;gap:8px;}
+.pw-code-input{flex:1;padding:12px 14px;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:'Playfair Display',serif;font-size:16px;letter-spacing:.15em;outline:none;text-transform:uppercase;}
+.pw-code-input:focus{border-color:rgba(224,96,160,.5);}
+.pw-code-btn{padding:12px 20px;background:linear-gradient(135deg,#7a50b0,#c060a0);color:white;border:none;font-family:'Zen Antique',serif;font-size:13px;letter-spacing:.15em;cursor:pointer;transition:all .2s;}
+.pw-code-btn:hover{opacity:.85;}
+.pw-code-error{font-size:12px;color:#e06060;margin-top:6px;letter-spacing:.1em;}
+
+/* Full report */
+.fr-badge{text-align:center;padding:10px 20px;background:linear-gradient(135deg,rgba(224,96,160,.15),rgba(155,127,212,.1));border:1px solid rgba(224,96,160,.3);font-family:'Playfair Display',serif;font-style:italic;font-size:12px;letter-spacing:.25em;color:#e060a0;margin-bottom:12px;width:100%;}
+
+/* Detail sections */
+.detail-section{width:100%;background:var(--card);border:1px solid var(--border);margin-bottom:12px;overflow:hidden;}
+.ds-header{padding:14px 20px;font-family:'Zen Antique',serif;font-size:13px;letter-spacing:.15em;color:var(--white);}
+.ds-header.d{border-left:3px solid var(--day);background:rgba(232,184,109,.04);}
+.ds-header.n{border-left:3px solid var(--night2);background:rgba(192,132,232,.04);}
+.ds-block{padding:14px 20px;border-top:1px solid var(--border);}
+.ds-label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.ds-text{font-size:13px;line-height:2;color:var(--text);letter-spacing:.04em;}
+.ds-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.ds-list li{font-size:13px;line-height:1.8;color:var(--text);letter-spacing:.03em;padding-left:16px;position:relative;}
+.ds-list li::before{content:'—';position:absolute;left:0;color:var(--muted);font-size:11px;}
+.ds-list.aru li::before{content:'→';}
+
+/* ★ AD CARD ★ */
+.ad-card{width:100%;padding:22px 20px;margin-bottom:12px;position:relative;overflow:hidden;text-decoration:none;display:block;transition:transform .2s,box-shadow .2s;cursor:pointer;border:1px solid;}
+.ad-card:hover{transform:translateY(-3px);}
+.ad-card.wedding{background:linear-gradient(135deg,#1a0e10,#2a1218);border-color:rgba(220,100,120,.25);}
+.ad-card.wedding:hover{box-shadow:0 8px 32px rgba(220,100,120,.2);}
+.ad-card.room{background:linear-gradient(135deg,#0e1218,#121e2a);border-color:rgba(100,160,220,.25);}
+.ad-card.room:hover{box-shadow:0 8px 32px rgba(100,160,220,.2);}
+.ad-card.match{background:linear-gradient(135deg,#0e180e,#121e14);border-color:rgba(100,200,120,.25);}
+.ad-card.match:hover{box-shadow:0 8px 32px rgba(100,200,120,.2);}
+.ad-card::before{content:'';position:absolute;inset:0;opacity:.04;pointer-events:none;}
+.ad-card.wedding::before{background:radial-gradient(ellipse at 30% 50%,#ff6080,transparent);}
+.ad-card.room::before{background:radial-gradient(ellipse at 30% 50%,#6090ff,transparent);}
+.ad-card.match::before{background:radial-gradient(ellipse at 30% 50%,#40c060,transparent);}
+.ad-tag{font-size:9px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:8px;position:relative;}
+.ad-card.wedding .ad-tag{color:rgba(220,100,120,.8);}
+.ad-card.room .ad-tag{color:rgba(100,160,220,.8);}
+.ad-card.match .ad-tag{color:rgba(100,200,120,.8);}
+.ad-head{font-family:'Zen Antique',serif;font-size:16px;letter-spacing:.1em;color:var(--white);margin-bottom:6px;position:relative;}
+.ad-body{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:14px;position:relative;}
+.ad-btn{display:inline-block;padding:10px 24px;font-family:'Zen Antique',serif;font-size:12px;letter-spacing:.2em;color:white;position:relative;}
+.ad-card.wedding .ad-btn{background:linear-gradient(135deg,#c03050,#e05070);}
+.ad-card.room .ad-btn{background:linear-gradient(135deg,#3060b0,#5080d0);}
+.ad-card.match .ad-btn{background:linear-gradient(135deg,#208040,#30b060);}
+.ad-score-badge{position:absolute;top:14px;right:14px;padding:4px 10px;font-size:10px;letter-spacing:.15em;border:1px solid;font-family:'Playfair Display',serif;font-style:italic;}
+.ad-card.wedding .ad-score-badge{border-color:rgba(220,100,120,.3);color:rgba(220,100,120,.8);}
+.ad-card.room .ad-score-badge{border-color:rgba(100,160,220,.3);color:rgba(100,160,220,.8);}
+.ad-card.match .ad-score-badge{border-color:rgba(100,200,120,.3);color:rgba(100,200,120,.8);}
+
+/* SNS card */
+.sns-card{width:100%;background:linear-gradient(135deg,#0d0b14,#131020);border:1px solid var(--border);padding:20px 18px;margin-bottom:12px;position:relative;overflow:hidden;}
+.sns-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 30%,rgba(232,184,109,.03),transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(155,127,212,.05),transparent 50%);pointer-events:none;}
+.sns-codes{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;letter-spacing:.1em;margin-bottom:5px;position:relative;}
+.sns-codes .cd{color:var(--day);}
+.sns-codes .cn{color:var(--night2);}
+.sns-codes .mx{color:var(--muted);opacity:.4;font-size:.72em;margin:0 3px;}
+.sns-score{font-family:'Zen Antique',serif;font-size:12px;letter-spacing:.08em;color:var(--muted);margin-bottom:4px;position:relative;}
+.sns-tags{font-size:11px;color:var(--night2);opacity:.55;position:relative;}
+
+/* BUTTONS */
+.btn{padding:15px 36px;font-family:'Zen Antique',serif;font-size:13px;letter-spacing:.22em;border:none;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;width:100%;max-width:300px;}
+.btn::after{content:'';position:absolute;inset:0;background:white;opacity:0;transition:opacity .2s;}
+.btn:hover::after{opacity:.06;}
+.btn:hover{transform:translateY(-2px);}
+.btn-main{background:linear-gradient(135deg,#7a50b0,#c060a0);color:white;box-shadow:0 4px 24px rgba(150,80,180,.25);}
+.btn-main:hover{box-shadow:0 8px 32px rgba(150,80,180,.4);}
+.btn-chain{background:linear-gradient(135deg,#2a1545,#6a3090);color:white;box-shadow:0 4px 20px rgba(100,60,150,.2);font-size:12px;}
+.btn-sns{background:linear-gradient(135deg,#1a1030,#402060);color:var(--night2);border:1px solid rgba(155,127,212,.3);font-size:11px;letter-spacing:.18em;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:11px;letter-spacing:.2em;padding:12px 28px;}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text);}
+.btn-stack{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;margin-top:4px;}
+
+.back-btn{display:flex;align-items:center;gap:8px;background:transparent;border:none;color:var(--muted);font-size:11px;letter-spacing:.2em;cursor:pointer;padding:16px 24px;transition:color .2s;align-self:flex-start;}
+.back-btn:hover{color:var(--text);}
+.back-btn::before{content:'←';}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:12px 24px;font-size:12px;letter-spacing:.15em;opacity:0;transition:all .3s;z-index:200;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
-
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-
 <div class="stars" id="stars"></div>
 <div class="toast" id="toast"></div>
+<div class="pt" id="pt">
+  <div class="pt-icon" id="ptAnimal">🦁</div>
+  <div class="pt-head">昼の顔、判明！</div>
+  <div class="pt-body" id="ptBody">次は夜の本性を診断します<br>正直に答えるほど精度が上がります</div>
+  <button class="btn btn-main" id="ptBtn">夜の診断を始める 🌙</button>
+</div>
 
-<!-- ── HOME ── -->
+<!-- HOME -->
 <section class="screen active" id="home">
-  <div class="home-badge">Personality × Compatibility Diagnosis</div>
-  <div class="home-logo">
-    <span class="logo-day">Day</span>
-    <span class="logo-x">×</span>
-    <span class="logo-night">Night</span>
+  <div class="eyebrow">Day × Night Animal Type</div>
+  <div class="logo"><span class="d">Day</span><span class="x">×</span><span class="n">Night</span></div>
+  <div class="tagline">昼の顔 × 夜の本性 = 本当の相性</div>
+  <div class="sub">あなたの動物タイプを診断して<br>好きな人に送るだけで相性がわかる</div>
+  <div class="animal-preview">
+    <span class="ap">🦁</span><span class="ap">🐺</span><span class="ap">🦊</span><span class="ap">🐯</span>
+    <span class="ap">🐱</span><span class="ap">🐰</span><span class="ap">🦋</span><span class="ap">🐻</span>
   </div>
-  <div class="home-tagline">昼の顔 × 夜の本性 = 本当の相性</div>
-  <div class="home-sub">普段の自分と夜の自分、両方を診断して<br>初めてわかる「本当の相性」を解き明かす</div>
-
-  <div class="axis-grid">
-    <div class="axis-item day">
-      <div class="axis-label">☀ Day Type</div>
-      <div class="axis-vs"><b>Logic</b> vs <b>Emotion</b></div>
-    </div>
-    <div class="axis-item day">
-      <div class="axis-label">☀ Day Type</div>
-      <div class="axis-vs"><b>Leader</b> vs <b>Support</b></div>
-    </div>
-    <div class="axis-item night">
-      <div class="axis-label">🌙 Night Type</div>
-      <div class="axis-vs"><b>Wild</b> vs <b>Tender</b></div>
-    </div>
-    <div class="axis-item night">
-      <div class="axis-label">🌙 Night Type</div>
-      <div class="axis-vs"><b>Lead</b> vs <b>Follow</b></div>
-    </div>
+  <div class="flow">
+    <div class="flow-step ds"><b>☀ 昼</b>8問</div>
+    <div class="farr">→</div>
+    <div class="flow-step ns"><b>🌙 夜</b>8問</div>
+    <div class="farr">→</div>
+    <div class="flow-step ms"><b>✦ 相性</b>即表示</div>
   </div>
-
-  <div class="home-buttons">
-    <button class="btn btn-day" onclick="startQuiz('day')">☀ 昼タイプを診断する</button>
-    <button class="btn btn-night" onclick="startQuiz('night')">🌙 夜タイプを診断する</button>
-    <button class="btn btn-ghost" onclick="goMatch()">コードを入力して相性チェック →</button>
-  </div>
+  <button class="btn btn-main" onclick="startQuiz()">診断スタート ✦</button>
 </section>
 
-<!-- ── QUIZ ── -->
+<!-- INVITE -->
+<section class="screen" id="invite">
+  <span class="inv-pulse">💌</span>
+  <div class="inv-title">あなたとの相性を診断したい人がいます</div>
+  <div class="inv-sub">相手はすでに診断済みです<br>あなたも16問に答えるだけで<br>2人の動物相性がわかります</div>
+  <div class="partner-preview">
+    <div class="pp-label">相手の動物タイプ</div>
+    <div class="pp-grid">
+      <div class="pp-type d">
+        <div class="pp-mode">☀ Day</div>
+        <span class="pp-animal" id="ppDayEmoji"></span>
+        <div class="pp-name" id="ppDayAnimal"></div>
+        <div class="pp-sub" id="ppDayType"></div>
+      </div>
+      <div class="pp-type n">
+        <div class="pp-mode">🌙 Night</div>
+        <span class="pp-animal" id="ppNightEmoji"></span>
+        <div class="pp-name" id="ppNightAnimal"></div>
+        <div class="pp-sub" id="ppNightType"></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-main" onclick="startQuiz()">診断して相性を見る ✦</button>
+</section>
+
+<!-- QUIZ -->
 <section class="screen" id="quiz">
   <button class="back-btn" onclick="goHome()">ホームに戻る</button>
-  <div class="quiz-header">
-    <div class="quiz-mode-badge" id="quizBadge">☀ Day Type Diagnosis</div>
-    <div class="quiz-progress-row">
-      <span class="quiz-progress-text">Question</span>
-      <span class="quiz-progress-count" id="qCount">1 <span>/ 8</span></span>
+  <div class="quiz-top">
+    <div class="phase-bar">
+      <div class="pp2" id="pill1"></div>
+      <div class="pp2" id="pill2"></div>
+    </div>
+    <div class="phase-lbl" id="phaseLbl">☀ Day Type — 昼の自分</div>
+    <div class="prog-row">
+      <span class="prog-t">Question</span>
+      <span class="prog-n" id="progNum">1 <span>/ 8</span></span>
     </div>
     <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:12.5%"></div></div>
   </div>
   <div class="quiz-body">
-    <div class="q-axis-tag" id="qAxisTag"></div>
-    <div class="q-question" id="qQuestion"></div>
-    <div class="q-choices" id="qChoices"></div>
+    <div class="q-axis" id="qAxis"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="choices" id="choices"></div>
   </div>
 </section>
 
-<!-- ── RESULT ── -->
-<section class="screen" id="result">
-  <button class="back-btn" onclick="goHome()">ホームに戻る</button>
-  <div class="result-mode-badge" id="resultBadge">☀ Day Type Result</div>
-  <span class="result-emoji" id="resultEmoji"></span>
-  <div class="result-code-wrap">
-    <div class="result-code" id="resultCode"></div>
-  </div>
-  <div class="result-typename" id="resultTypeName"></div>
-  <div class="result-typeen" id="resultTypeEn"></div>
+<!-- SOLO RESULT -->
+<section class="screen" id="solo">
+  <div class="sec-title">あなたの動物タイプ</div>
 
-  <div class="result-axes" id="resultAxes"></div>
-
-  <div class="result-desc">
-    <div class="result-desc-head">Type Description</div>
-    <div class="result-desc-text" id="resultDescText"></div>
-  </div>
-
-  <div class="copy-banner">
-    <div class="copy-banner-label">あなたのコード — 相手に教えよう</div>
-    <div class="copy-banner-code" id="copyCode"></div>
-    <button class="copy-btn" id="copyBtn" onclick="copyCode()">📋 コードをコピー</button>
-  </div>
-
-  <div class="result-buttons">
-    <button class="btn btn-match" onclick="goMatch()">相手のコードと相性チェック →</button>
-    <button class="btn btn-ghost" style="font-size:11px" id="otherDiagBtn"></button>
-  </div>
-</section>
-
-<!-- ── MATCH ── -->
-<section class="screen" id="match">
-  <button class="back-btn" onclick="goHome()">ホームに戻る</button>
-  <div class="match-title">相性チェック</div>
-  <div class="match-sub">2人のコードを入力して<br>昼×夜の本当の相性を診断しよう</div>
-
-  <div class="match-input-section">
-    <div class="match-person-label p1">Person A</div>
-    <div class="code-input-row">
-      <input class="code-input day-input" id="inputA_day" placeholder="ELWP" maxlength="4">
-      <input class="code-input night-input" id="inputA_night" placeholder="WTLF" maxlength="4">
+  <!-- 昼夜タイプ見出し -->
+  <div class="animal-reveal">
+    <div class="ar-card d">
+      <div class="ar-mode">☀ 昼の顔</div>
+      <span class="ar-emoji" id="sDayEmoji"></span>
+      <div class="ar-animal" id="sDayAnimal"></div>
+      <div class="ar-type" id="sDayType"></div>
     </div>
-    <div class="code-input-hint">左: Dayコード（4文字）　右: Nightコード（4文字）</div>
-
-    <div class="match-person-label p2">Person B</div>
-    <div class="code-input-row">
-      <input class="code-input day-input" id="inputB_day" placeholder="ELWP" maxlength="4">
-      <input class="code-input night-input" id="inputB_night" placeholder="WTLF" maxlength="4">
+    <div class="ar-card n">
+      <div class="ar-mode">🌙 夜の顔</div>
+      <span class="ar-emoji" id="sNightEmoji"></span>
+      <div class="ar-animal" id="sNightAnimal"></div>
+      <div class="ar-type" id="sNightType"></div>
     </div>
-    <div class="code-input-hint">左: Dayコード（4文字）　右: Nightコード（4文字）</div>
   </div>
 
-  <button class="btn btn-match" style="margin-bottom:28px;width:100%;max-width:280px" onclick="calcMatch()">相性を診断する ✦</button>
+  <!-- 詳細：昼 -->
+  <div class="detail-section">
+    <div class="ds-header d">☀ 昼のあなた詳細</div>
+    <div class="ds-block">
+      <div class="ds-label">キャラクター</div>
+      <div class="ds-text" id="dDayDesc"></div>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">💪 強み</div>
+      <ul class="ds-list" id="dDayStrong"></ul>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">😅 弱み</div>
+      <ul class="ds-list" id="dDayWeak"></ul>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">💛 昼の恋愛傾向</div>
+      <div class="ds-text" id="dDayLove"></div>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">🤣 あるある</div>
+      <ul class="ds-list aru" id="dDayAru"></ul>
+    </div>
+  </div>
 
-  <div id="matchResultArea" style="width:100%;display:none">
-    <div class="match-result-card">
-      <div class="match-score-wrap">
-        <div class="match-score-label">Compatibility Score</div>
-        <div class="match-score" id="matchScore">--<span class="match-score-unit">%</span></div>
+  <!-- 詳細：夜 -->
+  <div class="detail-section">
+    <div class="ds-header n">🌙 夜のあなた詳細</div>
+    <div class="ds-block">
+      <div class="ds-label">キャラクター</div>
+      <div class="ds-text" id="dNightDesc"></div>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">💜 夜の恋愛傾向</div>
+      <div class="ds-text" id="dNightLove"></div>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">💪 強み</div>
+      <ul class="ds-list" id="dNightStrong"></ul>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">😅 弱み</div>
+      <ul class="ds-list" id="dNightWeak"></ul>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">🌙 夜のあるある</div>
+      <ul class="ds-list aru" id="dNightAru"></ul>
+    </div>
+  </div>
+
+  <!-- 🔒 課金ウォール -->
+  <div class="paywall-block" id="paywallBlock">
+    <div class="pw-lock">🔒</div>
+    <div class="pw-title">フルレポートを解放する</div>
+    <div class="pw-price">¥300</div>
+    <div class="pw-items">
+      <div class="pw-item">📊 詳細性格分析（光と影の両面）</div>
+      <div class="pw-item">💑 恋愛・結婚の深層心理</div>
+      <div class="pw-item">💼 仕事適正＆向いてる職種</div>
+      <div class="pw-item">⚠️ あなたが持つ「地雷」全公開</div>
+      <div class="pw-item">🌙 夜の本性・深層欲求レポート</div>
+    </div>
+    <a class="btn btn-pay" href="https://buy.stripe.com/XXXXXXXX" target="_blank" id="stripeLink">
+      クレジットカードで解放する ¥300
+    </a>
+    <div class="pw-code-area">
+      <div class="pw-code-label">購入後に届くコードを入力</div>
+      <div class="pw-code-row">
+        <input class="pw-code-input" id="codeInput" placeholder="例: DNT-XXXX-XXXX" maxlength="14">
+        <button class="pw-code-btn" onclick="unlockReport()">解放</button>
       </div>
-      <div class="match-grade" id="matchGrade"></div>
-      <div class="match-desc" id="matchDesc"></div>
+      <div class="pw-code-error" id="codeError"></div>
+    </div>
+  </div>
+
+  <!-- フルレポート（課金後に表示） -->
+  <div class="full-report" id="fullReport" style="display:none">
+    <div class="fr-badge">✦ プレミアムレポート解放済み</div>
+
+    <div class="detail-section">
+      <div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">📊 詳細性格分析</div>
+      <div class="ds-block">
+        <div class="ds-label">光の面（強み）</div>
+        <ul class="ds-list" id="frLight"></ul>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">影の面（弱み・地雷）</div>
+        <ul class="ds-list" id="frShadow"></ul>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">他者からどう見られているか</div>
+        <div class="ds-text" id="frOutward"></div>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">本人が気づいていない自分</div>
+        <div class="ds-text" id="frBlind"></div>
+      </div>
     </div>
 
-    <div class="match-bars" id="matchBars"></div>
-
-    <div class="share-card">
-      <div class="share-codes" id="shareCodes"></div>
-      <div class="share-score-line" id="shareScoreLine"></div>
-      <div class="share-hashtags">#DayNightType #相性診断 #昼と夜の掛け算</div>
+    <div class="detail-section">
+      <div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">💑 恋愛・結婚の深層心理</div>
+      <div class="ds-block">
+        <div class="ds-label">理想のパートナー像</div>
+        <div class="ds-text" id="frIdealPartner"></div>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">恋愛で繰り返すパターン</div>
+        <div class="ds-text" id="frLovePattern"></div>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">結婚後の姿</div>
+        <div class="ds-text" id="frMarriage"></div>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">絶対に合わない相手のタイプ</div>
+        <div class="ds-text" id="frBadMatch"></div>
+      </div>
     </div>
 
-    <button class="btn btn-ghost" style="width:100%;max-width:280px;margin-bottom:12px" onclick="copyShareText()">📱 結果をコピーしてSNSでシェア</button>
+    <div class="detail-section">
+      <div class="ds-header" style="border-left:3px solid #60a0e0;background:rgba(96,160,224,.04)">💼 仕事適正レポート</div>
+      <div class="ds-block">
+        <div class="ds-label">向いている仕事・職種</div>
+        <ul class="ds-list" id="frJobs"></ul>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">仕事上の強み</div>
+        <div class="ds-text" id="frWorkStrong"></div>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">職場でのあるある行動</div>
+        <ul class="ds-list aru" id="frWorkAru"></ul>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">上司・部下・同僚との相性</div>
+        <div class="ds-text" id="frWorkRel"></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="ds-header" style="border-left:3px solid var(--night2);background:rgba(192,132,232,.04)">🌙 夜の本性・深層欲求</div>
+      <div class="ds-block">
+        <div class="ds-label">本当に求めているもの</div>
+        <div class="ds-text" id="frDeepDesire"></div>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">満たされないと出る行動</div>
+        <div class="ds-text" id="frUnmet"></div>
+      </div>
+      <div class="ds-block">
+        <div class="ds-label">夜の相性が最高になる条件</div>
+        <div class="ds-text" id="frBestCond"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chain-block">
+    <div class="cb-tag">💌 気になる人に送る</div>
+    <div class="cb-title">相性を確かめたい人に送ろう</div>
+    <div class="cb-sub">リンクを開いて診断するだけで<br>2人の相性がその場で表示されます</div>
+    <button class="btn btn-chain" onclick="copyInviteLink()">🔗 招待リンクをコピー</button>
+  </div>
+  <div class="chain-block">
+    <div class="cb-tag">📣 SNSでバズらせる</div>
+    <div class="cb-title">結果をポストする</div>
+    <div class="cb-sub">見た人が自分も診断→あなたに相性チェック<br>チェーンが広がります</div>
+    <button class="btn btn-sns" onclick="copySnsSolo()">📱 SNS用テキストをコピー</button>
+  </div>
+  <div class="btn-stack">
+    <button class="btn btn-ghost" onclick="startQuiz()">もう一度診断する</button>
+  </div>
+</section>
+
+<!-- MATCH RESULT -->
+<section class="screen" id="match">
+  <div class="sec-title" style="margin-top:16px">2人の動物相性</div>
+
+  <div class="animal-vs">
+    <div class="av-person">
+      <div class="av-label">相手</div>
+      <span class="av-day-emoji" id="avADayEmoji"></span>
+      <span class="av-night-emoji" id="avANightEmoji"></span>
+      <div class="av-names">
+        <span class="dn" id="avADayName"></span><br>
+        <span class="nn" id="avANightName"></span>
+      </div>
+    </div>
+    <div class="av-mid">vs</div>
+    <div class="av-person">
+      <div class="av-label">あなた</div>
+      <span class="av-day-emoji" id="avBDayEmoji"></span>
+      <span class="av-night-emoji" id="avBNightEmoji"></span>
+      <div class="av-names">
+        <span class="dn" id="avBDayName"></span><br>
+        <span class="nn" id="avBNightName"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scores">
+    <div class="sb d"><div class="sb-lbl">☀ 昼の相性</div><div class="sb-num" id="scDay">--</div><div class="sb-pct">%</div></div>
+    <div class="sb n"><div class="sb-lbl">🌙 夜の相性</div><div class="sb-num" id="scNight">--</div><div class="sb-pct">%</div></div>
+    <div class="sb t"><div class="sb-lbl">✦ 総合相性</div><div class="sb-num" id="scTotal">--</div><div class="sb-pct">%</div></div>
+  </div>
+
+  <div class="grade-card">
+    <div class="gc-grade" id="gcGrade"></div>
+    <div class="gc-desc" id="gcDesc"></div>
+  </div>
+
+  <!-- AD CARD (動的に表示) -->
+  <div id="adArea"></div>
+
+  <div class="sns-card">
+    <div class="sns-codes" id="snsCodes"></div>
+    <div class="sns-score" id="snsScore"></div>
+    <div class="sns-tags">#DayNightType #動物相性診断 #昼と夜の掛け算</div>
+  </div>
+
+  <div class="btn-stack">
+    <button class="btn btn-chain" onclick="copyMyInviteFromMatch()">💌 別の人との相性も見る</button>
+    <button class="btn btn-sns" onclick="copyShareText()">📱 この結果をSNSにポスト</button>
+    <button class="btn btn-ghost" onclick="startQuiz()">もう一度診断する</button>
   </div>
 </section>
 
 <script>
-// ── CURSOR ──
-const cursor = document.getElementById('cursor');
-const ring = document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
-(function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
-
-// ── STARS ──
-(function(){
-  const c = document.getElementById('stars');
+// Stars
+(()=>{
+  const c=document.getElementById('stars');
   for(let i=0;i<80;i++){
-    const s=document.createElement('div');
-    s.className='star';
-    const sz = Math.random()*1.5+0.5;
-    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*5}s;--min:${0.05+Math.random()*0.1};--max:${0.3+Math.random()*0.5}`;
+    const s=document.createElement('div');s.className='star';
+    const z=Math.random()*1.4+.4;
+    s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*6}s;--min:${.04+Math.random()*.08};--max:${.2+Math.random()*.35}`;
     c.appendChild(s);
   }
 })();
 
-// ── DATA ──
-const DAY_QUESTIONS = [
-  { axis:'Logic / Emotion', axisTag:'Axis 1 — Thinking Style',
-    q:'判断するとき、どちらに近い？',
-    a:[{label:'Logic',text:'データや論理で判断する。感情より根拠が大事。',val:'L'},
-       {label:'Emotion',text:'直感や感情で判断する。空気を読むのが得意。',val:'E'}]},
-  { axis:'Logic / Emotion', axisTag:'Axis 1 — Thinking Style',
-    q:'友人が悩んでいるとき、あなたがまず思うことは？',
-    a:[{label:'Logic',text:'解決策を考えて整理してあげたい。',val:'L'},
-       {label:'Emotion',text:'まず話を聞いて、気持ちに寄り添いたい。',val:'E'}]},
-  { axis:'Leader / Support', axisTag:'Axis 2 — Action Role',
-    q:'グループで何かをするとき、あなたは？',
-    a:[{label:'Leader',text:'自分がまとめ役になることが多い。',val:'W'},
-       {label:'Support',text:'サポートに回るほうが力を発揮できる。',val:'P'}]},
-  { axis:'Leader / Support', axisTag:'Axis 2 — Action Role',
-    q:'新しいことを始めるとき、あなたは？',
-    a:[{label:'Leader',text:'まず自分で動いて周りを巻き込む。',val:'W'},
-       {label:'Support',text:'誰かの動きを見てから慎重に合わせる。',val:'P'}]},
-  { axis:'Open / Reserved', axisTag:'Axis 3 — Social Style',
-    q:'初対面の人と話すとき、あなたは？',
-    a:[{label:'Open',text:'自分から話しかけて仲良くなるほうが得意。',val:'O'},
-       {label:'Reserved',text:'相手が話しかけてくれるまで様子を見る。',val:'I'}]},
-  { axis:'Open / Reserved', axisTag:'Axis 3 — Social Style',
-    q:'エネルギーが回復するのはどちら？',
-    a:[{label:'Open',text:'人と話したり外に出ると元気になる。',val:'O'},
-       {label:'Reserved',text:'一人の時間を過ごすと充電できる。',val:'I'}]},
-  { axis:'Structure / Flexible', axisTag:'Axis 4 — Lifestyle',
-    q:'計画について、あなたは？',
-    a:[{label:'Structure',text:'あらかじめ段取りを立てて動くのが好き。',val:'S'},
-       {label:'Flexible',text:'流れに任せてアドリブで動くのが楽しい。',val:'F'}]},
-  { axis:'Structure / Flexible', axisTag:'Axis 4 — Lifestyle',
-    q:'休日の過ごし方として理想なのは？',
-    a:[{label:'Structure',text:'前日には予定を決めて充実した一日にしたい。',val:'S'},
-       {label:'Flexible',text:'その日の気分で何をするか決めたい。',val:'F'}]},
-];
-
-const NIGHT_QUESTIONS = [
-  { axis:'Wild / Tender', axisTag:'Axis 1 — Intimacy Style',
-    q:'二人の時間、あなたが求めるのは？',
-    a:[{label:'Wild',text:'熱量と刺激。予測できない展開がたまらない。',val:'W'},
-       {label:'Tender',text:'安心感と温もり。ゆっくり溶け合う時間が好き。',val:'T'}]},
-  { axis:'Wild / Tender', axisTag:'Axis 1 — Intimacy Style',
-    q:'パートナーに一番してほしいことは？',
-    a:[{label:'Wild',text:'予告なしに驚かせてほしい。',val:'W'},
-       {label:'Tender',text:'名前を呼びながらずっと抱きしめてほしい。',val:'T'}]},
-  { axis:'Lead / Follow', axisTag:'Axis 2 — Dynamic Role',
-    q:'親密な場面でのあなたは？',
-    a:[{label:'Lead',text:'自分がリードして相手を導きたい。',val:'L'},
-       {label:'Follow',text:'相手に委ねて身を任せたい。',val:'F'}]},
-  { axis:'Lead / Follow', axisTag:'Axis 2 — Dynamic Role',
-    q:'相手を喜ばせるなら？',
-    a:[{label:'Lead',text:'自分が主導して相手の反応を見たい。',val:'L'},
-       {label:'Follow',text:'相手にされるがまま、感じたいことを感じたい。',val:'F'}]},
-  { axis:'Expressive / Quiet', axisTag:'Axis 3 — Expression',
-    q:'夜の感情表現について、あなたは？',
-    a:[{label:'Expressive',text:'声も言葉も全力で出したほうが気持ちいい。',val:'X'},
-       {label:'Quiet',text:'静かに、でも深く感じていたい。',val:'Q'}]},
-  { axis:'Expressive / Quiet', axisTag:'Axis 3 — Expression',
-    q:'終わった後、理想の空気感は？',
-    a:[{label:'Expressive',text:'まだ興奮が残っていて、たくさん話したい。',val:'X'},
-       {label:'Quiet',text:'言葉はいらない。静かに寄り添っていたい。',val:'Q'}]},
-  { axis:'Romantic / Primal', axisTag:'Axis 4 — Atmosphere',
-    q:'理想の雰囲気は？',
-    a:[{label:'Romantic',text:'キャンドル、音楽、言葉。全部揃えたい。',val:'R'},
-       {label:'Primal',text:'雰囲気より本能。何もいらない。',val:'D'}]},
-  { axis:'Romantic / Primal', axisTag:'Axis 4 — Atmosphere',
-    q:'二人の空間に最も必要なのは？',
-    a:[{label:'Romantic',text:'お互いを大切にする丁寧さと演出。',val:'R'},
-       {label:'Primal',text:'空気を読まない正直な欲望と勢い。',val:'D'}]},
-];
-
-// Type definitions
-const DAY_TYPES = {
-  'LWOS':{ name:'論理的なリーダー',  en:'The Rational Commander',  emoji:'⚡', desc:'感情に流されず、データと論理で的確に判断するリーダータイプ。人を動かす力がありながら、計画的に動く姿は周囲からの信頼が厚い。' },
-  'LWOF':{ name:'直感型のリーダー',  en:'The Visionary Pioneer',   emoji:'🔥', desc:'論理より直感、計画より即断即決。エネルギーが高く周囲を巻き込む力は圧倒的。予測不能な動きが武器。' },
-  'LWIS':{ name:'孤独な戦略家',      en:'The Strategic Loner',     emoji:'🎯', desc:'一人で深く考え、静かに動く。組織のリーダーではなく、陰で勝負を決める存在。緻密な計画と実行力が強み。' },
-  'LWIF':{ name:'自由な開拓者',      en:'The Free Pioneer',        emoji:'🌟', desc:'ルールより直感、集団より個。自分の信じる道を自由に歩む。束縛を嫌い、独自のペースで世界を変えていく。' },
-  'LPOS':{ name:'縁の下の論理家',    en:'The Quiet Strategist',    emoji:'🔬', desc:'表舞台に出なくても、裏側で全てを支える知性派。正確さと緻密さで周囲が気づかない部分を完璧に整える。' },
-  'LPOF':{ name:'柔軟な分析者',      en:'The Adaptive Analyst',    emoji:'💡', desc:'状況を素早く分析し、柔軟に対応する。固定した役割より流動的に動く。チームの潤滑油。' },
-  'LPIS':{ name:'静かな完璧主義者',  en:'The Silent Perfectionist',emoji:'📐', desc:'黙って自分の世界を極める。誰に評価されなくても、自分基準の完璧を追求し続ける姿勢が本物。' },
-  'LPIF':{ name:'内なる芸術家',      en:'The Inner Artist',        emoji:'🎨', desc:'言葉より感覚、ルールより美しさ。内側に豊かな世界を持ち、独自の審美眼で全てを見ている。' },
-  'EWOS':{ name:'カリスマ型共感者',  en:'The Charismatic Empath',  emoji:'✨', desc:'感情で人を動かす天才。人の気持ちを瞬時に読み、笑顔で場を支配する。いるだけでエネルギーが変わる。' },
-  'EWOF':{ name:'自由なムードメーカー',en:'The Free Spirit',       emoji:'🌈', desc:'直感と感情で動く即興の達人。計画より今この瞬間。場の空気を作り出す力が群を抜く。' },
-  'EWIS':{ name:'計画的な共感者',    en:'The Organized Empath',    emoji:'🌸', desc:'感情豊かでありながら計画的。人の気持ちを大切にしながら、きちんと整えられた場所で輝く。' },
-  'EWIF':{ name:'感性の旅人',        en:'The Wandering Soul',      emoji:'🦋', desc:'感情と直感に従い、風のように動く。深い感受性と自由な精神が融合した、予測不能な存在。' },
-  'EPOS':{ name:'細やかな気遣い屋',  en:'The Caring Organizer',    emoji:'🌺', desc:'相手の小さな変化に気づき、さりげなくサポートする。整理整頓された環境の中で、最も輝く縁の下の花。' },
-  'EPOF':{ name:'気まぐれなサポーター',en:'The Whimsical Supporter',emoji:'🌼', desc:'その時の気分で全力サポート。感情に正直で、思いやりが溢れ出す。予測不能な優しさが愛おしい。' },
-  'EPIS':{ name:'静かな共感者',      en:'The Still Waters',        emoji:'🌙', desc:'表に出ないが深く感じている。静かに寄り添い、言葉より存在で人を癒す。深みと温かさを持つ。' },
-  'EPIF':{ name:'直感的なヒーラー',  en:'The Intuitive Healer',    emoji:'💫', desc:'感情と直感で人を包む。ルールも計画も関係なく、純粋な愛情と共感で周囲を癒し続ける天性の存在。' },
+// ── 動物データ（詳細版）──
+const DAY_ANIMALS = {
+  LW: {
+    emoji:'🦁', animal:'ライオン', type:'頼れるリーダー',
+    desc:'みんなの信頼を集める存在感。論理的に動き周囲を引っ張るが、本当は仲間をとても大切にしている。一度決めたら迷わない決断力が最大の武器。',
+    strong:['どんな状況でも冷静に判断できる','責任感が強く、任されたことは必ずやり遂げる','言葉に説得力があり、人が自然とついてくる'],
+    weak:['完璧主義が出て、他人に任せるのが苦手になる','感情を出しにくく「何考えてるかわからない」と思われる','負けを認めるのに時間がかかる'],
+    love_day:'好きな人への気持ちは行動で示す。付き合う前から「俺がなんとかしてやる」精神が出がち。告白は真剣で重い。軽い関係が苦手なので、冗談のノリで恋愛をしようとする相手とは合わない。',
+    love_night:'夜になると独占欲が強くなる。相手をしっかりリードするが、たまに「本当はどうしたい？」と確認するデリカシーも持つ。パートナーが満足しているかをひそかに気にしている。',
+    aru:['打ち合わせ前に「ゴールから逆算して考えると」と言いがち','友達から「なんでも相談できる人」と思われているが実は自分は相談しない','デートプランは全部自分で決めて、当日サプライズ演出を仕込んでる','「まあ俺がやれば早いし」と言いながら全部抱えてパンクする']
+  },
+  LP: {
+    emoji:'🦊', animal:'キツネ', type:'頭脳派の参謀',
+    desc:'表には出ないが全てを把握している。データと戦略で静かに勝ちに行く、クールな知性派。場の空気を読んで最適解を出すのが得意。感情より論理で動くため、冷たく見られることもある。',
+    strong:['情報収集と分析が得意で、リスクを事前に潰せる','余計なことを言わず、言葉を選ぶので信頼される','感情的にならないので、冷静な判断が必要な場面で力を発揮する'],
+    weak:['本音をなかなか見せないため「距離がある」と感じさせる','納得いかないことは表情には出さないが心の中で根に持つ','頭で考えすぎて、行動が遅れることがある'],
+    love_day:'好きでも簡単に気持ちを見せない。観察してから動くタイプ。「なんとなく気になってる」段階が長く、いざ動くと計算し尽くして告白する。相手を試すような行動を取りがちで、それが誤解を生むこともある。',
+    love_night:'夜は普段見せない本音が出る。日中は冷静なのに、二人きりになると急に言葉数が増えたり、意外なほど甘えてきたりする。「昼と夜でキャラ違いすぎ」とよく言われる。',
+    aru:['会話中、相手の言葉の裏を読みすぎて疲れる','「えっ、そんなこと覚えてたの？」と言われるほど細かいことを記憶してる','好きな人の前でだけ妙にそっけなくなる','答えを出す前に「でも〜」と言いたくなる衝動を常に抑えている']
+  },
+  EW: {
+    emoji:'🐯', animal:'トラ', type:'情熱の行動派',
+    desc:'感情とエネルギーで周囲を動かす。思ったことはすぐ行動。その熱量に人が集まってくる。テンションの波が激しく、乗っているときの破壊力は誰にも負けない。',
+    strong:['その場の空気を一変させるエネルギーがある','直感が鋭く、チャンスを瞬時に掴みに行ける','情熱が人を動かす。「なんか一緒にいると楽しそう」と思わせる天才'],
+    weak:['テンションが下がると別人のように静かになる','後先考えずに動いて後から後悔するパターンが多い','継続が苦手。熱しやすく冷めやすい'],
+    love_day:'一目惚れからの猛アタックが多い。「なんかビビっときた」で行動する。告白はストレートで熱量がある分、フラれると引きずる。好きになったら全力投球で、相手が引くくらい構ってしまう。',
+    love_night:'夜は感情のままに動く。テクニックより本能。「上手くやろう」より「ちゃんと伝えたい」が先に来る。パートナーのリアクションをダイレクトに受け取るので、相手が無反応だとひそかに傷ついている。',
+    aru:['「これ絶対いける！」と思って動いて、翌朝冷静に後悔する','好きな人ができると周囲にバレバレなのに本人だけ隠せてると思ってる','テンション高いときに連絡が爆発する（LINEを5連投する）','怒りも喜びも顔にすぐ出て、ポーカーフェイスが一切できない']
+  },
+  EP: {
+    emoji:'🐰', animal:'ウサギ', type:'純粋な世話焼き',
+    desc:'相手の気持ちを敏感に感じ取り、さりげなく支える。その優しさは本物で、そばにいるだけで安心できる。ただし自分の気持ちは後回しにしがちで、知らない間に疲弊していることも。',
+    strong:['人の気持ちの変化に敏感で、何も言わなくても察してくれる','自分が損しても、大切な人のために動ける','波風を立てず場の雰囲気を守る調整力がある'],
+    weak:['自分の本音を言えずに溜め込んで、ある日突然爆発する','「NO」が言えなくて、断れず引き受け過ぎる','八方美人になりがちで、自分がどうしたいかわからなくなる'],
+    love_day:'好きな人への奉仕が始まる。「何か困ってない？」「これ好きだっけ？」と相手のことを先回りして考える。ただし肝心の「好き」という気持ちはなかなか伝えられず、友達止まりになるパターンが多い。',
+    love_night:'夜は普段の気遣い屋が消え、思いがけず素直になる。「こうしてほしい」という要求が出てきたり、甘えたい欲が表に出る。相手に全信頼を置いて委ねるタイプで、その無防備さが相手の保護欲を刺激する。',
+    aru:['グループのLINEで意見を聞かれると「みんなに合わせる！」と答えがち','相手が怒ってるのを3秒で感知して、原因を自分に求め始める','好きな人の誕生日を付き合う前から覚えている','「気にしてないよ」と言いながら翌日まで気にしてる']
+  },
+};
+const DAY_SUB = {
+  OS: '社交的で計画的',
+  OF: '社交的で自由奔放',
+  IS: '内向的で几帳面',
+  IF: '内向的でマイペース',
 };
 
-const NIGHT_TYPES = {
-  'WLLXR':{ name:'情熱の支配者',   en:'The Passionate Ruler',    emoji:'👑', desc:'激しさとリードを兼ね備えた、夜の王者。相手を圧倒する存在感と、声に出す表現力で場を支配する。' },
-  'WLLXD':{ name:'野性の狩人',     en:'The Primal Hunter',       emoji:'🐆', desc:'本能に従い、雰囲気より刺激を求める。リードしながら荒々しく、言葉より行動で全てを語る。' },
-  'WLLQR':{ name:'静かな王',       en:'The Silent King',         emoji:'🌑', desc:'激しさの中に静けさを持つ。リードするが声に出さず、深い存在感で相手を引き込む。' },
-  'WLLQD':{ name:'本能の王者',     en:'The Raw Sovereign',       emoji:'⚔️', desc:'演出もいらない、言葉もいらない。ただ本能のまま、圧倒的な存在感でリードする。' },
-  'WLFFXR':{ name:'情熱の炎',      en:'The Burning Flame',       emoji:'🔥', desc:'荒々しくも甘い、矛盾した魅力の持ち主。身を委ねながらも内側に爆発的な情熱を秘める。' },
-  'WLFXD':{ name:'野生の身悶え',   en:'The Wild Surrender',      emoji:'🌪️', desc:'委ねながらも野性的。本能のままに感じ、言葉なしで全てを表現する、原始的な美しさ。' },
-  'WLFQR':{ name:'秘密の炎',       en:'The Secret Flame',        emoji:'🕯️', desc:'静かに委ね、内側に燃える。ロマンチックな空間の中で、声を抑えながら深く感じる神秘。' },
-  'WLFQD':{ name:'野性の闇',       en:'The Feral Dark',          emoji:'🌑', desc:'本能と沈黙が融合。飾らない、演じない。ただ純粋に感じ、黙って全てを受け取る。' },
-  'TLLXR':{ name:'甘い支配者',     en:'The Sweet Dominator',     emoji:'🌹', desc:'温もりの中にリードする力。ロマンチックな演出と表現力豊かな声で、相手を包みながら導く。' },
-  'TLLXD':{ name:'本能の守護者',   en:'The Primal Guardian',     emoji:'🛡️', desc:'甘さと本能のミックス。言葉より行動、雰囲気より体温。リードしながら全力で守る。' },
-  'TLLQR':{ name:'静かな主人',     en:'The Quiet Master',        emoji:'🌌', desc:'声を上げずに場を支配する。ロマンチックな空気の中、静かにリードして深く繋がる。' },
-  'TLLQD':{ name:'無言の柱',       en:'The Silent Pillar',       emoji:'⛰️', desc:'安心感と本能が共存。何も言わずに守り、リードする。圧倒的な安定感が最大の魅力。' },
-  'TLFXR':{ name:'蕩ける花',       en:'The Melting Blossom',     emoji:'🌸', desc:'温もりに身を委ね、全てを表現する。ロマンチックな雰囲気の中で声に出して愛を伝える、純粋な受け手。' },
-  'TLFXD':{ name:'本能の受け手',   en:'The Primal Receiver',     emoji:'💝', desc:'甘さと本能のまま、感じたことを全部声に出す。演出より感覚、言葉より叫び。' },
-  'TLFQR':{ name:'月の溺れ人',     en:'The Moonlit Dreamer',     emoji:'🌕', desc:'静かに委ね、深く感じる夢見がち。ロマンチックな空間で声を抑えながら、溶けるように愛を受け取る。' },
-  'TLFQD':{ name:'静かな深海',     en:'The Silent Depths',       emoji:'🌊', desc:'言葉も声も必要ない。ただ静かに、深く、本能のまま全てを感じる。底知れぬ深さが魅力。' },
+const NIGHT_ANIMALS = {
+  WL: {
+    emoji:'🐺', animal:'オオカミ', type:'本能で狩る野獣',
+    desc:'夜になると本性が覚醒する。リードしながら激しく、相手を強く求める。その独占欲と熱量は本物。昼間の理性が全部吹っ飛んで、本能だけで動く。',
+    strong:['相手を引っ張る力と包容力が共存している','激しさの中に相手への深い愛情がある','「この人に守られてる」と感じさせる圧倒的な存在感'],
+    weak:['独占欲が強すぎて、相手を息苦しくさせることがある','感情が激しい分、冷めたときの温度差も大きい','昼と夜のギャップが大きすぎて、相手が戸惑う'],
+    love_night:'リードすることに快感を覚える。相手が自分を求めてくれることが何より嬉しく、それを確認するために少し試すような行動を取ることも。独占欲が強く、パートナーが他の人に振り向くのが許せない。',
+    aru_night:['翌朝、昨夜の激しさとのギャップで照れて無口になる','「俺のこと好き？」と確認したくなる衝動が夜になると強まる','独占したいくせに、束縛してると思われたくないジレンマを抱えてる','相手の寝顔をこっそり眺めて「守りたい」と思っている']
+  },
+  WF: {
+    emoji:'🐯', animal:'野生のトラ', type:'激しく燃える野生',
+    desc:'身を委ねながらも内側は爆発寸前。相手の情熱に呼応して解き放たれる、危険な魅力の持ち主。受け身に見えて、実は誰よりも深く感じている。',
+    strong:['相手の情熱を受け止め、さらに増幅させる力がある','感じたことを全力で表現するため、相手に「伝わってる」と思わせる','本能のまま動くため、嘘や演技が一切ない'],
+    weak:['感情の波が激しく、自分でもコントロールできないことがある','流された結果「なんであんなことしたんだろう」と後悔することがある','相手のテンションに引きずられやすい'],
+    love_night:'相手の熱量が上がるほど自分も燃え上がる。リードされることで本来の自分が解放される感覚を求めている。感じたことを包み隠さず表現するため、「こんな一面があったんだ」と相手を驚かせる。',
+    aru_night:['「最初はそんなつもりじゃなかったのに」が口癖になっている','終わった後に急に饒舌になって、話が止まらなくなる','相手が本気のとき、それをちゃんと感じ取れる第六感がある','夜の記憶を翌日昼間に思い出して、一人でニヤニヤする']
+  },
+  TL: {
+    emoji:'🦁', animal:'甘えるライオン', type:'ドSな支配者',
+    desc:'普段は穏やかだが夜は支配的な一面が現れる。相手をそっとリードしながら、深く包み込む。優しさとドSが同居した、独特のギャップが魅力。',
+    strong:['相手が安心して委ねられる空気を作れる','優しさとリードのバランスが絶妙で、相手を心地よく支配できる','相手の反応を丁寧に見ながら、ペースを調整できる'],
+    weak:['支配欲と優しさの比率が崩れると、相手が混乱する','「全部俺に任せて」精神が強すぎて、相手の自主性を奪うことがある','自分がリードできないと不完全燃焼になる'],
+    love_night:'相手を自分のペースに引き込むのが得意。「こっちに来て」と言葉ではなく空気で伝える。強引ではなく、相手が自然と従いたくなるような誘導をする。パートナーが心から委ねてきたとき、最も充足感を覚える。',
+    aru_night:['「嫌だったら言って」と言いながら、嫌と言われると少しだけ寂しい','相手が自分の言う通りにしてくれたとき、顔に出さないようにしている満足感がある','普段と夜のギャップを自分でも面白いと思っている','パートナーが無防備に寝入った瞬間に、なぜか保護欲が最高潮になる']
+  },
+  TF: {
+    emoji:'🐱', animal:'ネコ', type:'気まぐれな甘えんぼ',
+    desc:'夜は打って変わって甘えモードに。委ねることで本当の自分を出せる。その無防備さが相手の保護欲を刺激する。普段の自分とのギャップに、相手は必ずドはまりする。',
+    strong:['無防備に甘えられる信頼を相手に与えている','感じたことを素直に表現するため、相手に「必要とされてる」と感じさせる','委ねることで相手を主役にできる、珍しいタイプ'],
+    weak:['気まぐれで、昨日と今日で求めるものが変わる','「察してほしい」欲求が強く、言葉にしないまま不満を溜める','完全に委ねすぎて、後から「あれは違った」と感じることがある'],
+    love_night:'普段の自分とのギャップが最大の武器。昼間はしっかりしているのに夜だけ甘えてくる、そのギャップに相手はやられる。「こっちは何もしなくていいよ」と言ってくれる相手に最も心を開く。',
+    aru_night:['翌朝、昨夜甘えすぎたことが恥ずかしくて急にクールになる','「どうしてほしい？」と聞かれると答えられないのに、察してくれないと拗ねる','相手がとても優しいとき、感動して泣きそうになるのを必死で堪えてる','二人きりになった瞬間から、昼間のキャラが溶け始める']
+  },
+};
+const NIGHT_SUB = {
+  XR: '声に出して、ロマンチックに',
+  XD: '声に出して、本能のまま',
+  QR: '静かに、ロマンチックに',
+  QD: '静かに、本能のまま',
 };
 
-function getDayCode(scores){ 
-  return (scores.L>=scores.E?'L':'E') + (scores.W>=scores.P?'W':'P') + (scores.O>=scores.I?'O':'I') + (scores.S>=scores.F?'S':'F');
+// コードから動物取得
+function getDayAnimal(code) {
+  // code = LWOS / EWIF など
+  const key = code[0]+code[1]; // LW, LP, EW, EP
+  return DAY_ANIMALS[key] || DAY_ANIMALS['EW'];
 }
-function getNightCode(scores){ 
-  return (scores.W>=scores.T?'W':'T') + (scores.L>=scores.F?'L':'F') + (scores.X>=scores.Q?'X':'Q') + (scores.R>=scores.D?'R':'D');
+function getNightAnimal(code) {
+  const key = code[0]+code[1]; // WL, WF, TL, TF
+  return NIGHT_ANIMALS[key] || NIGHT_ANIMALS['TF'];
 }
+function getDaySub(code){ return DAY_SUB[code[2]+code[3]] || ''; }
+function getNightSub(code){ return NIGHT_SUB[code[2]+code[3]] || ''; }
 
-// ── STATE ──
-let currentMode = 'day';
-let currentQ = 0;
-let dayScores = {L:0,E:0,W:0,P:0,O:0,I:0,S:0,F:0};
-let nightScores = {W:0,T:0,L:0,F:0,X:0,Q:0,R:0,D:0};
-let dayCode = '';
-let nightCode = '';
+// Questions
+const DAY_Q=[
+  {axis:'Axis 1 — Thinking',q:'判断するとき、どちらに近い？',a:[{l:'Logic',t:'データと論理で決める。感情より根拠が大事。',v:'L'},{l:'Emotion',t:'直感と感情で決める。空気を読むのが得意。',v:'E'}]},
+  {axis:'Axis 1 — Thinking',q:'友人が悩んでいるとき、まず思うことは？',a:[{l:'Logic',t:'整理して解決策を一緒に考えてあげたい。',v:'L'},{l:'Emotion',t:'まず話を聞いて、気持ちに寄り添いたい。',v:'E'}]},
+  {axis:'Axis 2 — Action',q:'グループで動くとき、あなたは？',a:[{l:'Leader',t:'自分がまとめ役になることが多い。',v:'W'},{l:'Support',t:'サポートに回るほうが力を発揮できる。',v:'P'}]},
+  {axis:'Axis 2 — Action',q:'新しいことを始めるとき、あなたは？',a:[{l:'Leader',t:'まず動いて周りを巻き込む。',v:'W'},{l:'Support',t:'誰かの動きを見てから慎重に合わせる。',v:'P'}]},
+  {axis:'Axis 3 — Social',q:'初対面の人との会話、あなたは？',a:[{l:'Open',t:'自分から話しかけて仲良くなれる。',v:'O'},{l:'Reserved',t:'相手が話しかけてくれるまで待つ。',v:'I'}]},
+  {axis:'Axis 3 — Social',q:'エネルギーが回復するのは？',a:[{l:'Open',t:'人と話したり外に出ると元気になる。',v:'O'},{l:'Reserved',t:'一人の時間を過ごすと充電できる。',v:'I'}]},
+  {axis:'Axis 4 — Lifestyle',q:'計画について、あなたは？',a:[{l:'Structure',t:'事前に段取りを決めて動くのが好き。',v:'S'},{l:'Flexible',t:'流れに任せてアドリブで動く方が楽しい。',v:'F'}]},
+  {axis:'Axis 4 — Lifestyle',q:'理想の休日は？',a:[{l:'Structure',t:'前日に予定を決めて充実した一日にしたい。',v:'S'},{l:'Flexible',t:'当日の気分で何をするか決めたい。',v:'F'}]},
+];
+const NIGHT_Q=[
+  {axis:'Axis 1 — Intensity',q:'二人の時間、あなたが求めるのは？',a:[{l:'Wild',t:'熱量と刺激。予測できない展開がたまらない。',v:'W'},{l:'Tender',t:'安心感と温もり。ゆっくり溶け合う時間が好き。',v:'T'}]},
+  {axis:'Axis 1 — Intensity',q:'パートナーにいちばんしてほしいことは？',a:[{l:'Wild',t:'予告なしに驚かせてほしい。',v:'W'},{l:'Tender',t:'名前を呼びながらずっと抱きしめてほしい。',v:'T'}]},
+  {axis:'Axis 2 — Role',q:'親密な場面でのあなたは？',a:[{l:'Lead',t:'自分がリードして相手を引っ張りたい。',v:'L'},{l:'Follow',t:'相手に委ねて身を任せたい。',v:'F'}]},
+  {axis:'Axis 2 — Role',q:'相手を喜ばせるとしたら？',a:[{l:'Lead',t:'自分が主導して相手の反応を見たい。',v:'L'},{l:'Follow',t:'相手のしたいことを全部受け取りたい。',v:'F'}]},
+  {axis:'Axis 3 — Expression',q:'夜の感情表現は？',a:[{l:'Expressive',t:'声も言葉も全力で出す。それが気持ちいい。',v:'X'},{l:'Quiet',t:'静かに、でも深く感じていたい。',v:'Q'}]},
+  {axis:'Axis 3 — Expression',q:'終わった後の理想の空気感は？',a:[{l:'Expressive',t:'まだ興奮が残っていてたくさん話したい。',v:'X'},{l:'Quiet',t:'言葉はいらない。静かに寄り添っていたい。',v:'Q'}]},
+  {axis:'Axis 4 — Atmosphere',q:'理想の雰囲気は？',a:[{l:'Romantic',t:'キャンドル、音楽、言葉。全部揃えたい。',v:'R'},{l:'Primal',t:'雰囲気より本能。何もいらない。',v:'D'}]},
+  {axis:'Axis 4 — Atmosphere',q:'二人の空間に最も必要なのは？',a:[{l:'Romantic',t:'お互いを大切にする演出と丁寧さ。',v:'R'},{l:'Primal',t:'空気を読まない正直な欲望と勢い。',v:'D'}]},
+];
 
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); });
-  const s = document.getElementById(id);
-  s.classList.remove('active');
-  void s.offsetWidth;
-  s.classList.add('active');
-  window.scrollTo(0,0);
+const GRADES=[
+  {min:80,g:'💍 運命の相性',d:'昼も夜も、魂レベルで繋がっている。価値観も本性も完璧に噛み合う。出会うべくして出会った、本物の相性。'},
+  {min:60,g:'🏠 深い調和', d:'昼の関係性が夜をより深くし、夜の情熱が昼の絆を強くする。一緒にいるほど輝く、本物の相性。'},
+  {min:40,g:'💫 伸びしろあり',d:'噛み合わない部分もあるが、それが逆に刺激になる。お互いを知るほど化学反応が起きるかも。'},
+  {min:0, g:'🌱 別の出会いへ',d:'今は縁が薄いかもしれない。でも世界には相性ぴったりの相手が必ずいる。'},
+];
+
+// AD data
+const ADS = {
+  high: {
+    cls:'wedding', tag:'💍 80%以上 — すぐ結婚へ',
+    head:'この相性、結婚を考えてみませんか？',
+    body:'ゼクシィで理想の結婚式を探してみよう。無料で式場探しができます。',
+    btn:'ゼクシィで式場を探す →',
+    url:'https://zexy.net',
+    badge:'相性 80%+',
+  },
+  mid: {
+    cls:'room', tag:'🏠 60%以上 — まずは同棲から',
+    head:'同棲を始めてみませんか？',
+    body:'おけまる不動産で二人暮らし向けの物件を探してみよう。',
+    btn:'おけまるで物件を探す →',
+    url:'https://okemaru.jp',
+    badge:'相性 60%+',
+  },
+  low: {
+    cls:'match', tag:'💚 別の出会いも探してみよう',
+    head:'相性ぴったりの相手が必ずいる',
+    body:'with（ウィズ）で心理テストで相性の良い人を見つけよう。',
+    btn:'withで出会いを探す →',
+    url:'https://with.is',
+    badge:'新しい出会いへ',
+  },
+};
+
+// State
+let phase='day',qIdx=0;
+let ds={L:0,E:0,W:0,P:0,O:0,I:0,S:0,F:0};
+let ns={W:0,T:0,L:0,F:0,X:0,Q:0,R:0,D:0};
+let myDay='',myNight='',pDay='',pNight='';
+
+const gd=s=>(s.L>=s.E?'L':'E')+(s.W>=s.P?'W':'P')+(s.O>=s.I?'O':'I')+(s.S>=s.F?'S':'F');
+const gn=s=>(s.W>=s.T?'W':'T')+(s.L>=s.F?'L':'F')+(s.X>=s.Q?'X':'Q')+(s.R>=s.D?'R':'D');
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);el.classList.remove('active');void el.offsetWidth;el.classList.add('active');window.scrollTo(0,0);
 }
+function goHome(){show('home');}
 
-function goHome(){ showScreen('home'); }
-function goMatch(){ showScreen('match'); }
-
-function startQuiz(mode){
-  currentMode = mode;
-  currentQ = 0;
-  dayScores = {L:0,E:0,W:0,P:0,O:0,I:0,S:0,F:0};
-  nightScores = {W:0,T:0,L:0,F:0,X:0,Q:0,R:0,D:0};
-  
-  const badge = document.getElementById('quizBadge');
-  const count = document.getElementById('qCount');
-  const fill = document.getElementById('progFill');
-  const axisTag = document.getElementById('qAxisTag');
-  
-  if(mode==='day'){
-    badge.className='quiz-mode-badge day';
-    badge.textContent='☀ Day Type Diagnosis';
-    count.className='quiz-progress-count day';
-    fill.className='prog-fill day';
-    axisTag.className='q-axis-tag day';
-    document.querySelectorAll('.choice').forEach(c=>c.classList.add('day-choice'));
-  } else {
-    badge.className='quiz-mode-badge night';
-    badge.textContent='🌙 Night Type Diagnosis';
-    count.className='quiz-progress-count night';
-    fill.className='prog-fill night';
-    axisTag.className='q-axis-tag night';
+// URL check
+window.addEventListener('DOMContentLoaded',()=>{
+  const p=new URLSearchParams(location.search);
+  const c=p.get('a');
+  if(c&&c.length===8){
+    pDay=c.slice(0,4).toUpperCase();
+    pNight=c.slice(4,8).toUpperCase();
+    const da=getDayAnimal(pDay), na=getNightAnimal(pNight);
+    document.getElementById('ppDayEmoji').textContent=da.emoji;
+    document.getElementById('ppDayAnimal').textContent=da.animal;
+    document.getElementById('ppDayType').textContent=da.type;
+    document.getElementById('ppNightEmoji').textContent=na.emoji;
+    document.getElementById('ppNightAnimal').textContent=na.animal;
+    document.getElementById('ppNightType').textContent=na.type;
+    show('invite');
   }
-  
-  showScreen('quiz');
-  renderQ();
+});
+
+function startQuiz(){
+  phase='day';qIdx=0;
+  ds={L:0,E:0,W:0,P:0,O:0,I:0,S:0,F:0};
+  ns={W:0,T:0,L:0,F:0,X:0,Q:0,R:0,D:0};
+  show('quiz');renderQ();
 }
 
 function renderQ(){
-  const qs = currentMode==='day' ? DAY_QUESTIONS : NIGHT_QUESTIONS;
-  const total = qs.length;
-  const q = qs[currentQ];
-  
-  document.getElementById('qCount').innerHTML = `${currentQ+1} <span>/ ${total}</span>`;
-  document.getElementById('progFill').style.width = ((currentQ+1)/total*100)+'%';
-  document.getElementById('qAxisTag').textContent = q.axisTag;
-  document.getElementById('qQuestion').textContent = q.q;
-  
-  const container = document.getElementById('qChoices');
-  container.innerHTML = '';
-  
-  q.a.forEach((ans, i) => {
-    const btn = document.createElement('button');
-    btn.className = `choice ${currentMode}-choice`;
-    btn.innerHTML = `<div class="choice-bar"></div><div class="choice-side">${ans.label}</div><div class="choice-text">${ans.text}</div>`;
-    btn.onclick = () => answerQ(ans.val);
-    
-    btn.style.opacity = '0';
-    btn.style.transform = 'translateY(12px)';
-    setTimeout(()=>{ btn.style.transition='all 0.3s ease'; btn.style.opacity='1'; btn.style.transform='translateY(0)'; }, i*80+100);
-    
-    container.appendChild(btn);
+  const qs=phase==='day'?DAY_Q:NIGHT_Q,q=qs[qIdx],tot=qs.length,isD=phase==='day';
+  document.getElementById('pill1').className='pp2 '+(isD?'ad':'dd');
+  document.getElementById('pill2').className='pp2 '+(isD?'':'an');
+  const pl=document.getElementById('phaseLbl');
+  pl.className='phase-lbl '+(isD?'d':'n');
+  pl.textContent=isD?'☀ Day Type — 昼の自分':'🌙 Night Type — 夜の本性';
+  const pn=document.getElementById('progNum');
+  pn.className='prog-n '+(isD?'d':'n');
+  pn.innerHTML=`${qIdx+1} <span>/ ${tot}</span>`;
+  const pf=document.getElementById('progFill');
+  pf.className='prog-fill '+(isD?'d':'n');
+  pf.style.width=((qIdx+1)/tot*100)+'%';
+  const at=document.getElementById('qAxis');
+  at.className='q-axis '+(isD?'d':'n');
+  at.textContent=q.axis;
+  document.getElementById('qText').textContent=q.q;
+  const ch=document.getElementById('choices');ch.innerHTML='';
+  q.a.forEach((a,i)=>{
+    const b=document.createElement('button');
+    b.className='choice '+(isD?'dc':'nc');
+    b.innerHTML=`<div class="cbg"></div><div class="clbl">${a.l}</div><div class="ctxt">${a.t}</div>`;
+    b.onclick=()=>answer(a.v);
+    b.style.opacity='0';b.style.transform='translateY(10px)';
+    setTimeout(()=>{b.style.transition='all .28s ease';b.style.opacity='1';b.style.transform='translateY(0)';},i*70+80);
+    ch.appendChild(b);
   });
 }
 
-function answerQ(val){
-  const qs = currentMode==='day' ? DAY_QUESTIONS : NIGHT_QUESTIONS;
-  
-  if(currentMode==='day') dayScores[val]++;
-  else nightScores[val]++;
-  
-  currentQ++;
-  
-  if(currentQ >= qs.length){
-    showResult();
-  } else {
-    const body = document.querySelector('.quiz-body');
-    body.style.opacity='0'; body.style.transform='translateX(-12px)';
-    setTimeout(()=>{
-      renderQ();
-      body.style.transition='all 0.25s ease';
-      body.style.opacity='1'; body.style.transform='translateX(0)';
-    }, 180);
+function answer(v){
+  if(phase==='day') ds[v]++; else ns[v]++;
+  qIdx++;
+  const qs=phase==='day'?DAY_Q:NIGHT_Q;
+  if(qIdx>=qs.length){
+    if(phase==='day'){
+      myDay=gd(ds);
+      const da=getDayAnimal(myDay);
+      document.getElementById('ptAnimal').textContent=da.emoji;
+      document.getElementById('ptBody').textContent=`昼のあなたは「${da.emoji} ${da.animal}」\n次は夜の本性を診断します`;
+      const pt=document.getElementById('pt');
+      document.getElementById('ptBtn').onclick=()=>{pt.classList.remove('show');phase='night';qIdx=0;renderQ();};
+      pt.classList.add('show');
+    } else { finish(); }
+    return;
   }
+  const body=document.querySelector('.quiz-body');
+  body.style.opacity='0';body.style.transform='translateX(-10px)';
+  setTimeout(()=>{renderQ();body.style.transition='all .22s ease';body.style.opacity='1';body.style.transform='translateX(0)';},160);
 }
 
-function showResult(){
-  let code, type, modeClass;
-  
-  if(currentMode==='day'){
-    code = getDayCode(dayScores);
-    dayCode = code;
-    type = DAY_TYPES[code] || DAY_TYPES['EWOS'];
-    modeClass = 'day';
-    document.getElementById('resultBadge').textContent = '☀ Day Type Result';
-    document.getElementById('otherDiagBtn').textContent = '🌙 夜タイプも診断する';
-    document.getElementById('otherDiagBtn').onclick = ()=>startQuiz('night');
-  } else {
-    code = getNightCode(nightScores);
-    nightCode = code;
-    type = NIGHT_TYPES[code] || NIGHT_TYPES['TLFQR'];
-    modeClass = 'night';
-    document.getElementById('resultBadge').textContent = '🌙 Night Type Result';
-    document.getElementById('otherDiagBtn').textContent = '☀ 昼タイプも診断する';
-    document.getElementById('otherDiagBtn').onclick = ()=>startQuiz('day');
-  }
-  
-  document.getElementById('resultEmoji').textContent = type.emoji;
-  
-  const codeEl = document.getElementById('resultCode');
-  codeEl.textContent = code;
-  codeEl.className = `result-code ${modeClass}`;
-  
-  document.getElementById('resultTypeName').textContent = type.name;
-  document.getElementById('resultTypeEn').textContent = type.en;
-  document.getElementById('resultDescText').textContent = type.desc;
-  
-  const copyCode = document.getElementById('copyCode');
-  copyCode.textContent = code;
-  copyCode.className = `copy-banner-code ${modeClass}`;
-  
-  // Axes
-  const axesEl = document.getElementById('resultAxes');
-  axesEl.innerHTML = '';
-  if(currentMode==='day'){
-    const pairs = [['L','E','Logic','Emotion'],['W','P','Leader','Support'],['O','I','Open','Reserved'],['S','F','Structure','Flexible']];
-    pairs.forEach(([a,b,la,lb])=>{
-      const chosen = dayScores[a]>=dayScores[b] ? la : lb;
-      const chosenCode = dayScores[a]>=dayScores[b] ? a : b;
-      axesEl.innerHTML += `<div class="result-axis-item"><div class="result-axis-label">${la} / ${lb}</div><div class="result-axis-val day">${chosen}</div></div>`;
-    });
-  } else {
-    const pairs = [['W','T','Wild','Tender'],['L','F','Lead','Follow'],['X','Q','Expressive','Quiet'],['R','D','Romantic','Primal']];
-    pairs.forEach(([a,b,la,lb])=>{
-      const chosen = nightScores[a]>=nightScores[b] ? la : lb;
-      axesEl.innerHTML += `<div class="result-axis-item"><div class="result-axis-label">${la} / ${lb}</div><div class="result-axis-val night">${chosen}</div></div>`;
-    });
-  }
-  
-  showScreen('result');
+function finish(){
+  myDay=gd(ds); myNight=gn(ns);
+  if(pDay&&pNight){ showMatch(); } else { showSolo(); }
 }
 
-window.copyCode = function(){
-  const code = currentMode==='day' ? dayCode : nightCode;
-  const modeText = currentMode==='day' ? '☀ Day' : '🌙 Night';
-  navigator.clipboard.writeText(code).then(()=>{
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✓ コピーしました';
-    btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='📋 コードをコピー'; btn.classList.remove('copied'); }, 2000);
+function showSolo(){
+  const da=getDayAnimal(myDay), na=getNightAnimal(myNight);
+
+  // 昼夜ヘッダー
+  document.getElementById('sDayEmoji').textContent=da.emoji;
+  document.getElementById('sDayAnimal').textContent=da.animal;
+  document.getElementById('sDayType').textContent=da.type+' · '+getDaySub(myDay);
+  document.getElementById('sNightEmoji').textContent=na.emoji;
+  document.getElementById('sNightAnimal').textContent=na.animal;
+  document.getElementById('sNightType').textContent=na.type+' · '+getNightSub(myNight);
+
+  // 昼詳細
+  document.getElementById('dDayDesc').textContent=da.desc;
+  const dStrong=document.getElementById('dDayStrong');
+  dStrong.innerHTML=da.strong.map(s=>`<li>${s}</li>`).join('');
+  const dWeak=document.getElementById('dDayWeak');
+  dWeak.innerHTML=da.weak.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('dDayLove').textContent=da.love_day;
+  const dAru=document.getElementById('dDayAru');
+  dAru.innerHTML=da.aru.map(s=>`<li>${s}</li>`).join('');
+
+  // 夜詳細
+  document.getElementById('dNightDesc').textContent=na.desc;
+  document.getElementById('dNightLove').textContent=na.love_night;
+  const nStrong=document.getElementById('dNightStrong');
+  nStrong.innerHTML=na.strong.map(s=>`<li>${s}</li>`).join('');
+  const nWeak=document.getElementById('dNightWeak');
+  nWeak.innerHTML=na.weak.map(s=>`<li>${s}</li>`).join('');
+  const nAru=document.getElementById('dNightAru');
+  nAru.innerHTML=na.aru_night.map(s=>`<li>${s}</li>`).join('');
+
+  show('solo');
+  checkUnlocked();
+}
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+function makeInviteUrl(){
+  return location.href.split('?')[0]+'?a='+myDay+myNight;
+}
+
+window.copyInviteLink=function(){
+  navigator.clipboard.writeText(makeInviteUrl()).then(()=>toast('リンクをコピーしました！気になる人に送ろう 💌'));
+};
+
+window.copySnsSolo=function(){
+  const da=getDayAnimal(myDay),na=getNightAnimal(myNight);
+  const url=makeInviteUrl();
+  const txt=`【DayNight Type 動物診断した🐾】\n\n☀ 昼の私 → ${da.emoji}${da.animal}「${da.type}」\n🌙 夜の私 → ${na.emoji}${na.animal}「${na.type}」\n\n私との相性気になる人はここから診断して👇\n${url}\n\n#DayNightType #動物相性診断 #昼と夜の掛け算`;
+  navigator.clipboard.writeText(txt).then(()=>toast('コピーしました！SNSに貼り付けよう'));
+};
+
+window.copyMyInviteFromMatch=function(){
+  navigator.clipboard.writeText(makeInviteUrl()).then(()=>toast('リンクをコピーしました！次の相手に送ろう 💌'));
+};
+
+function codeScore(a,b,mode){
+  if(!a||!b||a.length!==4||b.length!==4)return 50;
+  let s=0;
+  if(mode==='day'){s+=a[0]===b[0]?22:18;s+=a[1]!==b[1]?24:16;s+=a[2]===b[2]?20:16;s+=a[3]===b[3]?20:16;}
+  else{s+=a[0]!==b[0]?28:14;s+=a[1]!==b[1]?28:14;s+=a[2]===b[2]?22:18;s+=a[3]===b[3]?22:16;}
+  return Math.min(s+Math.floor(Math.random()*5),99);
+}
+
+function showMatch(){
+  const da=getDayAnimal(pDay),na=getNightAnimal(pNight);
+  const dab=getDayAnimal(myDay),nab=getNightAnimal(myNight);
+
+  document.getElementById('avADayEmoji').textContent=da.emoji;
+  document.getElementById('avANightEmoji').textContent=na.emoji;
+  document.getElementById('avADayName').textContent=da.animal;
+  document.getElementById('avANightName').textContent=na.animal;
+  document.getElementById('avBDayEmoji').textContent=dab.emoji;
+  document.getElementById('avBNightEmoji').textContent=nab.emoji;
+  document.getElementById('avBDayName').textContent=dab.animal;
+  document.getElementById('avBNightName').textContent=nab.animal;
+
+  const ds2=codeScore(pDay,myDay,'day');
+  const ns2=codeScore(pNight,myNight,'night');
+  const tot=Math.round(ds2*.4+ns2*.6);
+  const gr=GRADES.find(g=>tot>=g.min);
+
+  show('match');
+
+  ['scDay','scNight','scTotal'].forEach((id,i)=>{
+    const tg=[ds2,ns2,tot][i],el=document.getElementById(id);
+    let n=0;const step=Math.ceil(tg/25);
+    setTimeout(()=>{const t=setInterval(()=>{n=Math.min(n+step,tg);el.textContent=n;if(n>=tg)clearInterval(t);},40);},i*180);
   });
-};
 
-// ── MATCH CALCULATION ──
-function calcCompatibility(ad, an, bd, bn){
-  const dayMatch = calcCodeMatch(ad, bd, 'day');
-  const nightMatch = calcCodeMatch(an, bn, 'night');
-  
-  // Day×Night scoring weights
-  const dayWeight = 0.4;
-  const nightWeight = 0.6;
-  const overall = Math.round(dayMatch * dayWeight + nightMatch * nightWeight);
-  
-  return { overall, dayMatch, nightMatch };
+  document.getElementById('gcGrade').textContent=gr.g;
+  document.getElementById('gcDesc').textContent=gr.d;
+
+  // AD選択
+  const adData = tot>=80 ? ADS.high : tot>=60 ? ADS.mid : ADS.low;
+  document.getElementById('adArea').innerHTML=`
+    <a class="ad-card ${adData.cls}" href="${adData.url}" target="_blank" rel="noopener">
+      <div class="ad-score-badge">${adData.badge}</div>
+      <div class="ad-tag">${adData.tag}</div>
+      <div class="ad-head">${adData.head}</div>
+      <div class="ad-body">${adData.body}</div>
+      <div class="ad-btn">${adData.btn}</div>
+    </a>`;
+
+  document.getElementById('snsCodes').innerHTML=
+    `<span class="cd">${da.emoji}${pDay.slice(0,2)}</span><span class="mx">×</span><span class="cn">${na.emoji}${pNight.slice(0,2)}</span>`+
+    `<span style="color:var(--muted);opacity:.35;margin:0 8px;font-size:.72em">vs</span>`+
+    `<span class="cd">${dab.emoji}${myDay.slice(0,2)}</span><span class="mx">×</span><span class="cn">${nab.emoji}${myNight.slice(0,2)}</span>`;
+  document.getElementById('snsScore').textContent=`☀昼${ds2}%　🌙夜${ns2}%　✦総合${tot}%　${gr.g}`;
 }
 
-function calcCodeMatch(codeA, codeB, mode){
-  if(!codeA || !codeB || codeA.length!==4 || codeB.length!==4) return 50;
-  
-  let score = 0;
-  
-  if(mode==='day'){
-    const axes = ['LEvs','WPvs','OIvs','SFvs'];
-    for(let i=0;i<4;i++){
-      const a = codeA[i], b = codeB[i];
-      // Same type = good complement or conflict depending on axis
-      if(a===b){ score += 18; } // Same type - comfortable
-      else { score += 22; } // Opposite - complementary (夜は逆が相性いい設計)
-    }
-    score += Math.floor(Math.random()*8); // slight variance
+window.copyShareText=function(){
+  const ds2=document.getElementById('scDay').textContent;
+  const ns2=document.getElementById('scNight').textContent;
+  const tot=document.getElementById('scTotal').textContent;
+  const gr=document.getElementById('gcGrade').textContent;
+  const da=getDayAnimal(pDay),na=getNightAnimal(pNight);
+  const dab=getDayAnimal(myDay),nab=getNightAnimal(myNight);
+  const url=makeInviteUrl();
+  const txt=`【DayNight Type 動物相性診断🐾】\n\n相手: ${da.emoji}${da.animal} × ${na.emoji}${na.animal}\n私: ${dab.emoji}${dab.animal} × ${nab.emoji}${nab.animal}\n\n☀ 昼の相性  ${ds2}%\n🌙 夜の相性  ${ns2}%\n✦ 総合相性  ${tot}%\n\n${gr}\n\nあなたとも相性チェックしたい👇\n${url}\n\n#DayNightType #動物相性診断 #昼と夜の掛け算`;
+  navigator.clipboard.writeText(txt).then(()=>toast('コピーしました！SNSに貼り付けよう🌙'));
+};
+
+// ── フルレポートデータ ──
+const FULL_REPORT = {
+  'LWWL': {
+    light:['目標から逆算して動ける戦略的思考力','どんな逆境でも折れない根性と忍耐力','言葉に重みがあり、一度発言すると周囲が自然に動く','感情に流されない安定したリーダーシップ'],
+    shadow:['正しさへの執着が強く、融通が利かない場面がある','相手が期待通りに動かないと内側でイライラを溜め込む','弱さを見せることを「負け」と感じてしまう','他者への要求水準が無意識に高く、周囲を疲弊させることがある'],
+    outward:'「頼れる人」「この人なら任せられる」という印象を与える。実力者からも一目置かれるが、親しみにくいと感じられることも多い。近づきたいが近づきにくい、という独特のオーラを持つ。',
+    blind:'自分が周囲に与えているプレッシャーに全く気づいていない。「なんでできないの？」という無言のオーラが常に滲み出ており、周囲は気を遣い続けている。',
+    idealPartner:'自分の世界観を理解しつつ、対等に意見を言える人。ただ従うだけの相手には早々に飽きる。知的刺激と安心感を同時に与えてくれる、自立した存在。',
+    lovePattern:'最初は慎重に観察して、確信が持てたら一気に動く。一度好きになると独占欲が爆発する。「俺が守る」モードが全開になり、過保護になりやすい。フラれると引きずる期間が長い。',
+    marriage:'家族への責任感は圧倒的。稼ぎも守りも本気で取り組む。ただし家庭でもリーダー気質が抜けず、パートナーが「息苦しい」と感じることも。定期的な「何も求めない時間」の確保が関係継続のカギ。',
+    badMatch:'感情的で気分の波が激しい人。言動の一貫性がない人には強いストレスを感じ、最終的に切ってしまう。',
+    jobs:['経営者・管理職','プロジェクトマネージャー','弁護士・コンサルタント','医師・専門職','スポーツ選手（個人競技）'],
+    workStrong:'締め切りと目標に対して鬼のように強い。チームが迷走しているとき、誰よりも早く正確に舵を切れる。結果を出し続けることで周囲の信頼を積み上げる。',
+    workAru:['「それ意味ある？」と言いたいのを我慢してる会議が週に3回はある','部下が失敗すると、怒る前にまず「なぜ失敗したか」を自分なりに分析し始める','仕事とプライベートのスイッチを完全に切り替えられると思っているが、実はできていない'],
+    workRel:'上司には「結果で黙らせる」スタイル。部下には高い基準を求めるが、認めると全力でフォローする。同僚とはドライに見えて、実は長期的な信頼関係を誰より大切にしている。',
+    deepDesire:'「誰かにただ甘えたい」という深い欲求。日中は完璧な自分を演じ続けているため、夜だけは鎧を脱いで誰かに委ねたいと思っている。これを満たしてくれる人に強烈に執着する。',
+    unmet:'支配・リードできない状況が続くと、言葉数が減り態度が冷たくなる。相手が離れていく気配を感じると、逆に強く引き留めようとして関係が悪化するループに入りやすい。',
+    bestCond:'相手が完全に信頼して身を委ねてくれたとき。「あなたしかいない」と心から言われる瞬間に本領を発揮する。支配と優しさが同時に求められる状況が最高の舞台。',
+  },
+  'LWTF': {
+    light:['冷静な判断力と夜だけ見せる純粋な甘えのギャップが最大の魅力','論理で積み上げてきた信頼が二人の時間をより深くする','昼と夜のON/OFFが美しいほど明確','自分に厳しいからこそ、相手への甘えが本物に見える'],
+    shadow:['甘えたい欲求を昼間は完全に封印するため、夜に突然爆発することがある','「察してほしい」気持ちが強いが、普段論理的なだけに相手が気づけない','弱さを見せることへの恥ずかしさから、助けを求めるタイミングが遅れる'],
+    outward:'昼間は完璧な人間に見える。夜のギャップを知っている人は「あの人にそんな一面があるの？」と驚く。昼の完璧さが、夜の甘えをより魅力的に見せる。',
+    blind:'自分の「甘えたいサイン」が相手に全く伝わっていないことに気づいていない。「普通わかるでしょ」と思っているが、相手には見えていない。',
+    idealPartner:'昼間の自分を尊重しつつ、夜だけは無条件に受け止めてくれる人。強さと包容力を兼ね備えた、「この人の前でだけ弱くなれる」と感じさせる存在。',
+    lovePattern:'好きな人の前でだけ妙にそっけなくなる。本当は猛烈に意識しているが悟られるのが怖い。結果的に相手に「脈なし」と思われるループにはまりやすい。一度関係が始まると深く依存する。',
+    marriage:'家庭では意外なほど甘えん坊になる。仕事では鬼の集中力を発揮するが、家に帰ると「今日疲れた」とすぐ寄り掛かってくる。パートナーに「仕事の顔と全然違う」とよく言われる。',
+    badMatch:'感情で押してくる人、気分で動く人。論理が通じない人との会話は体力を消耗し、長期的な関係が続かない。',
+    jobs:['研究職・エンジニア','戦略コンサルタント','データアナリスト','医師・薬剤師','作家・脚本家'],
+    workStrong:'一人で深く考える作業が圧倒的に得意。締め切り前になると集中力が2倍になる。完成度の高い成果物で周囲を黙らせる。',
+    workAru:['資料の完成度が高すぎて、プレゼン本番より準備の方に力が入っている','「これで合ってる」と言われても、自分でもう一度確認しないと気が済まない','雑談が苦手で、飲み会では話を聞く役になっている'],
+    workRel:'上司には論理で反論するタイプ。感情的に叱責されると頭が真っ白になる。部下には丁寧に指導するが、指示が細かすぎて相手が息苦しくなることがある。',
+    deepDesire:'「全部委ねてもいい」と思える安全な場所と人。昼間の緊張が完全にほどける瞬間を本能的に求め続けている。',
+    unmet:'甘えられる環境がないと、だんだん表情が硬くなり、小さなことでイライラが増える。SOSを出す前に限界を超えてしまうことが多い。',
+    bestCond:'相手が優しく先導してくれるとき。「俺（私）に任せて」と言われると、一瞬で全部解けていく。',
+  },
+  'EWWL': {
+    light:['情熱と本能が共鳴し、どこにいても存在感が爆発する','感情豊かで相手を本気にさせる力がある','昼も夜も全力投球で、偽物感がゼロ','場の空気を変える能力が圧倒的'],
+    shadow:['感情の振れ幅が大きく、周囲がペースを掴みにくい','テンションの高低差が激しすぎて、相手が疲弊することがある','後先考えずに動いた結果を、後から後悔することが定期的にある'],
+    outward:'「あの人、面白い」「一緒にいると何か起きそう」という印象を与える。ただし波が激しいので、距離の置き方が難しいと感じる人も多い。',
+    blind:'自分のテンションが周囲に与えるプレッシャーに気づいていない。「楽しくしてるだけ」のつもりが、相手には「乗らなきゃいけない空気」になっている。',
+    idealPartner:'自分の熱量を受け止めてさらに返してくれる人。一緒にいて温度が上がる相手。冷静に見えて内側に激しいものを持っている人が最も惹かれる。',
+    lovePattern:'瞬間で動く。「なんかいいな」と思った次の瞬間には行動している。全力で愛するが、相手が冷めたと感じた瞬間に傷つき、急激に引く。温度差に敏感すぎる。',
+    marriage:'家庭は明るくエネルギッシュ。子供ができると最高の親になる。ただし飽きが来やすいため、マンネリをどう防ぐかが結婚継続の最大のカギ。',
+    badMatch:'反応が薄い人、温度が読めない人。一緒にいても温度が上がらないと感じたら、どんなに条件が良くても距離を置いてしまう。',
+    jobs:['営業・販売職','起業家・事業家','俳優・タレント・クリエイター','コーチ・トレーナー','イベントプランナー'],
+    workStrong:'クライアントや顧客を本気にさせる力。初対面でも5分で打ち解ける。組織が停滞しているときに起爆剤になれる。',
+    workAru:['メールより電話、電話より直接話しに行く方が絶対早いと信じている','プレゼンは資料より熱量で乗り切るスタイル','朝のテンションが高すぎてチームが引いていることに気づかない'],
+    workRel:'上司には「まずやってみます」で動く。部下の熱量を引き出すのが得意だが、自分のペースを強要しすぎると相手がついてこれなくなる。',
+    deepDesire:'誰かに完全にリードされ、何も考えずに感じることだけに集中したい。昼間のエネルギーを全部使い果たした後、何もしなくていい場所と人を求めている。',
+    unmet:'刺激がない状態が続くと、無意識に「事件」を起こしてしまう。感情の出口がないとストレスが爆発する。',
+    bestCond:'相手が全力で向き合ってくれるとき。「あなたのことだけ考えてる」という状況に最も燃え上がる。',
+  },
+  'EPTF': {
+    light:['相手の気持ちを敏感に感じ取る共感力','夜になると普段の遠慮が消え、素直な自分になれる','無防備な甘えが相手の保護欲を刺激する天性の魅力','自分を犠牲にしても大切な人のために動ける誠実さ'],
+    shadow:['「察してほしい」欲求と「言えない」性格が組み合わさり、気づいたら溜め込んでいる','NOが言えず、嫌なことも受け入れてしまう癖がある','自己犠牲が強く、自分のニーズを後回しにし続ける'],
+    outward:'「優しい人」「なんか守ってあげたくなる」という印象を強く与える。頼られると断れないため、便利に使われるリスクも持っている。',
+    blind:'自分が相手に対してかなり強い依存心を持っていること。「一人でも大丈夫」と言いながら、一人になると一番不安になる。',
+    idealPartner:'自分から動かなくても大丈夫な安心感を与えてくれる人。「ここにいていいよ」と言葉より態度で示してくれる、包容力のある存在。',
+    lovePattern:'好きな人の周りをずっとウロウロして、相手が気づくのを待つ。告白されるまで自分からは動けない。付き合うと相手にどっぷりはまり、恋愛依存に近い状態になる。',
+    marriage:'家庭に入ると本領発揮。パートナーと子供のために全力で動く。ただし自分の気持ちを後回しにし続けて、10年後に「私はどこにいたんだろう」と感じることがある。定期的に「自分の時間」を意識的に作ることが大切。',
+    badMatch:'自分のことしか考えない人、感謝を当然と思う人。与え続けても報われない関係は、ゆっくりと自分を壊していく。',
+    jobs:['看護師・介護職','カウンセラー・社会福祉士','保育士・教師','接客・サービス職','人事・サポート職'],
+    workStrong:'職場の人間関係の調整役として力を発揮する。誰かが困っているとすぐ気づき、動ける。チームの空気を整える縁の下の力持ち。',
+    workAru:['「ちょっといいですか？」と声をかけられると、どれだけ忙しくても断れない','自分の仕事が終わっても残ってる人がいると帰れない','感謝されると全部報われた気分になってまた頑張ってしまう'],
+    workRel:'上司からは「なんでも頼める子」と思われている（良くも悪くも）。部下には優しすぎて舐められることがある。同僚とは本音で話せる数少ない関係を大切にしている。',
+    deepDesire:'「あなただけでいい」と言って全力で求めてくれる人。普段は人のために動きすぎているため、夜だけは自分が中心になりたいという深層欲求がある。',
+    unmet:'愛情確認ができないと不安が増大する。「好き？」と聞きたいのを我慢して、ひたすら相手の態度を観察してしまう。',
+    bestCond:'相手が積極的にリードしてくれるとき。「俺（私）が全部やる」という姿勢に最も安心して心が開ける。',
+  },
+};
+
+function getFullReport(dayCode, nightCode) {
+  const key = dayCode.slice(0,2) + nightCode.slice(0,2);
+  if (FULL_REPORT[key]) return FULL_REPORT[key];
+  const fallbacks = Object.keys(FULL_REPORT);
+  const match = fallbacks.find(k => k.startsWith(dayCode.slice(0,2))) || fallbacks[0];
+  return FULL_REPORT[match];
+}
+
+const DEMO_CODES = new Set(['DNT-0000-0000','DNT-1234-5678','DNT-DEMO-2024','DNT-TEST-0001']);
+
+window.unlockReport = function(){
+  const raw = document.getElementById('codeInput').value.toUpperCase().trim();
+  const err = document.getElementById('codeError');
+  if(DEMO_CODES.has(raw) || /^DNT-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(raw)){
+    document.getElementById('paywallBlock').style.display='none';
+    const fr = document.getElementById('fullReport');
+    fr.style.display='block';
+    fillFullReport();
+    fr.scrollIntoView({behavior:'smooth', block:'start'});
+    err.textContent='';
+    try{ localStorage.setItem('dnt_unlocked_'+myDay+myNight,'1'); }catch(e){}
+    toast('✦ フルレポートを解放しました');
   } else {
-    // Night: certain combos are better
-    const combos = {
-      'WL_TF': 28, 'WT_WT': 18, 'LL_FF': 26, 'XQ_QX': 28,
-      'RD_DR': 26, 'XX_XX': 14, 'QQ_QQ': 22,
-    };
-    for(let i=0;i<4;i++){
-      const a = codeA[i], b = codeB[i];
-      // Axis 1 (W/T): opposites match better
-      if(i===0){ score += (a!==b ? 26 : 14); }
-      // Axis 2 (L/F): opposites match
-      else if(i===1){ score += (a!==b ? 26 : 16); }
-      // Axis 3 (X/Q): both same OK, different also OK
-      else if(i===2){ score += (a===b ? 22 : 20); }
-      // Axis 4 (R/D): same tends to match
-      else { score += (a===b ? 24 : 16); }
+    err.textContent='コードが正しくありません。購入後のメールをご確認ください。';
+  }
+};
+
+function fillFullReport(){
+  const r = getFullReport(myDay, myNight);
+  document.getElementById('frLight').innerHTML = r.light.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frShadow').innerHTML = r.shadow.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frOutward').textContent = r.outward;
+  document.getElementById('frBlind').textContent = r.blind;
+  document.getElementById('frIdealPartner').textContent = r.idealPartner;
+  document.getElementById('frLovePattern').textContent = r.lovePattern;
+  document.getElementById('frMarriage').textContent = r.marriage;
+  document.getElementById('frBadMatch').textContent = r.badMatch;
+  document.getElementById('frJobs').innerHTML = r.jobs.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frWorkStrong').textContent = r.workStrong;
+  document.getElementById('frWorkAru').innerHTML = r.workAru.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frWorkRel').textContent = r.workRel;
+  document.getElementById('frDeepDesire').textContent = r.deepDesire;
+  document.getElementById('frUnmet').textContent = r.unmet;
+  document.getElementById('frBestCond').textContent = r.bestCond;
+}
+
+function checkUnlocked(){
+  try{
+    if(myDay && myNight && localStorage.getItem('dnt_unlocked_'+myDay+myNight)){
+      document.getElementById('paywallBlock').style.display='none';
+      document.getElementById('fullReport').style.display='block';
+      fillFullReport();
     }
-    score = Math.min(score, 96);
-    score += Math.floor(Math.random()*6);
-  }
-  
-  return Math.min(score, 99);
+  }catch(e){}
 }
 
-const MATCH_GRADES = [
-  { min:90, grade:'✦ 運命の相性', desc:'昼も夜も、魂レベルで繋がっている。普段の価値観が深く共鳴し、夜の本性も完璧に噛み合う。出会うべくして出会った、本物の相性。' },
-  { min:78, grade:'◈ 深い調和',  desc:'昼の関係性が夜をより深くする。普段の信頼が夜の安心感に変わり、夜の情熱が昼の絆を強くする。時間をかけるほど輝く関係。' },
-  { min:65, grade:'◇ 補完関係',  desc:'昼と夜で異なる面が絶妙にかみ合う。お互いの違いが魅力になる相性。慣れるほど深みが増す。' },
-  { min:50, grade:'△ 伸びしろあり', desc:'昼の相性と夜の相性にギャップがある。表面的な関係と本性の間に差があるが、それを乗り越えると強い絆になれる。' },
-  { min:0,  grade:'✗ 挑戦的な相性', desc:'普通とは違うルートで繋がるタイプ。初期の摩擦が大きいが、お互いを受け入れた時の化学反応は誰にも負けないかもしれない。' },
-];
 
-window.calcMatch = function(){
-  const ad = document.getElementById('inputA_day').value.toUpperCase().trim();
-  const an = document.getElementById('inputA_night').value.toUpperCase().trim();
-  const bd = document.getElementById('inputB_day').value.toUpperCase().trim();
-  const bn = document.getElementById('inputB_night').value.toUpperCase().trim();
-  
-  if([ad,an,bd,bn].some(c=>c.length!==4)){
-    showToast('コードはすべて4文字で入力してください'); return;
-  }
-  
-  const { overall, dayMatch, nightMatch } = calcCompatibility(ad,an,bd,bn);
-  const gradeInfo = MATCH_GRADES.find(g=>overall>=g.min);
-  
-  // Animate score
-  const scoreEl = document.getElementById('matchScore');
-  let n=0;
-  const step = Math.ceil(overall/30);
-  const timer = setInterval(()=>{
-    n = Math.min(n+step, overall);
-    scoreEl.innerHTML = `${n}<span class="match-score-unit">%</span>`;
-    if(n>=overall) clearInterval(timer);
-  }, 40);
-  
-  document.getElementById('matchGrade').textContent = gradeInfo.grade;
-  document.getElementById('matchDesc').textContent = gradeInfo.desc;
-  
-  // Bars
-  const barsEl = document.getElementById('matchBars');
-  const barData = [
-    { label:'昼の相性', val:dayMatch, color:'linear-gradient(to right,#b8832a,var(--day2))' },
-    { label:'夜の相性', val:nightMatch, color:'linear-gradient(to right,#5b3f9a,var(--night2))' },
-    { label:'総合相性', val:overall, color:'linear-gradient(to right,#8b3f6a,#c084e8)' },
-  ];
-  barsEl.innerHTML = barData.map(b=>`
-    <div class="match-bar-row">
-      <div class="match-bar-label">${b.label}</div>
-      <div class="match-bar-track"><div class="match-bar-fill" style="width:0%;background:${b.color}" data-val="${b.val}"></div></div>
-      <div class="match-bar-val">${b.val}%</div>
-    </div>
-  `).join('');
-  
-  setTimeout(()=>{
-    barsEl.querySelectorAll('.match-bar-fill').forEach(f=>{
-      f.style.width = f.dataset.val + '%';
-    });
-  }, 200);
-  
-  // Share card
-  document.getElementById('shareCodes').innerHTML = `<span style="color:var(--day)">${ad}</span><span class="share-x">×</span><span style="color:var(--night2)">${an}</span><span style="color:var(--muted);font-size:14px;margin:0 12px">vs</span><span style="color:var(--day)">${bd}</span><span class="share-x">×</span><span style="color:var(--night2)">${bn}</span>`;
-  document.getElementById('shareScoreLine').textContent = `総合相性 ${overall}% — ${gradeInfo.grade.replace(/[✦◈◇△✗]/,'').trim()}`;
-  
-  document.getElementById('matchResultArea').style.display = 'block';
-  document.getElementById('matchResultArea').scrollIntoView({behavior:'smooth', block:'nearest'});
-};
-
-window.copyShareText = function(){
-  const ad = document.getElementById('inputA_day').value.toUpperCase();
-  const an = document.getElementById('inputA_night').value.toUpperCase();
-  const bd = document.getElementById('inputB_day').value.toUpperCase();
-  const bn = document.getElementById('inputB_night').value.toUpperCase();
-  const score = document.getElementById('matchScore').textContent.replace('%','').replace(/[^0-9]/g,'');
-  const grade = document.getElementById('matchGrade').textContent;
-  
-  const text = `【DayNight Type 相性診断】\n\nAさん: ☀${ad} × 🌙${an}\nBさん: ☀${bd} × 🌙${bn}\n\n総合相性: ${score}%\n${grade}\n\n昼と夜の掛け算で本当の相性がわかる診断\n#DayNightType #相性診断 #昼と夜の掛け算`;
-  
-  navigator.clipboard.writeText(text).then(()=>showToast('コピーしました！SNSに貼り付けよう🌙'));
-};
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2400);
-}
-
-// Auto-uppercase inputs
-document.querySelectorAll('.code-input').forEach(inp=>{
-  inp.addEventListener('input',()=>{ inp.value=inp.value.toUpperCase(); });
-});
 </script>
 </body>
 </html>
