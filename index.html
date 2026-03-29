@@ -590,6 +590,57 @@ body::after{content:'';position:fixed;bottom:-10%;right:-10%;width:40%;height:40
     <div class="sns-tags">#DayNightType #動物相性診断 #昼と夜の掛け算</div>
   </div>
 
+  <!-- 自分の詳細結果（相性画面でも表示） -->
+  <div style="width:100%;margin-top:8px;margin-bottom:8px;padding:12px 0;border-top:1px solid var(--border);text-align:center;font-family:'Zen Antique',serif;font-size:12px;letter-spacing:.2em;color:var(--muted);">✦ あなたの動物タイプ詳細</div>
+  <div class="animal-reveal" style="margin-bottom:12px">
+    <div class="ar-card d"><div class="ar-mode">☀ 昼の顔</div><span class="ar-emoji" id="msDayEmoji"></span><div class="ar-animal" id="msDayAnimal"></div><div class="ar-type" id="msDayType"></div></div>
+    <div class="ar-card n"><div class="ar-mode">🌙 夜の顔</div><span class="ar-emoji" id="msNightEmoji"></span><div class="ar-animal" id="msNightAnimal"></div><div class="ar-type" id="msNightType"></div></div>
+  </div>
+  <!-- 課金ウォール（相性画面） -->
+  <div class="paywall-block" id="paywallBlockMatch">
+    <div class="pw-lock">🔒</div>
+    <div class="pw-title">フルレポートを解放する</div>
+    <div class="pw-price">¥300</div>
+    <div class="pw-items">
+      <div class="pw-item">📊 詳細性格分析（光と影の両面）</div>
+      <div class="pw-item">💑 恋愛・結婚の深層心理</div>
+      <div class="pw-item">💼 仕事適正＆向いてる職種</div>
+      <div class="pw-item">⚠️ あなたが持つ「地雷」全公開</div>
+      <div class="pw-item">🌙 夜の本性・深層欲求レポート</div>
+    </div>
+    <a class="btn btn-pay" href="https://buy.stripe.com/XXXXXXXX" target="_blank">クレジットカードで解放する ¥300</a>
+    <div class="pw-code-area">
+      <div class="pw-code-label">購入後に届くコードを入力</div>
+      <div class="pw-code-row">
+        <input class="pw-code-input" id="codeInputMatch" placeholder="例: DNT-XXXX-XXXX" maxlength="14">
+        <button class="pw-code-btn" onclick="unlockReportMatch()">解放</button>
+      </div>
+      <div class="pw-code-error" id="codeErrorMatch"></div>
+    </div>
+  </div>
+  <div class="full-report" id="fullReportMatch" style="display:none">
+    <div class="fr-badge">✦ プレミアムレポート解放済み</div>
+    <div class="detail-section"><div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">📊 詳細性格分析</div>
+    <div class="ds-block"><div class="ds-label">光の面</div><ul class="ds-list" id="frLightM"></ul></div>
+    <div class="ds-block"><div class="ds-label">影の面・地雷</div><ul class="ds-list" id="frShadowM"></ul></div>
+    <div class="ds-block"><div class="ds-label">他者からどう見られているか</div><div class="ds-text" id="frOutwardM"></div></div>
+    <div class="ds-block"><div class="ds-label">本人が気づいていない自分</div><div class="ds-text" id="frBlindM"></div></div></div>
+    <div class="detail-section"><div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">💑 恋愛・結婚の深層心理</div>
+    <div class="ds-block"><div class="ds-label">理想のパートナー像</div><div class="ds-text" id="frIdealPartnerM"></div></div>
+    <div class="ds-block"><div class="ds-label">恋愛で繰り返すパターン</div><div class="ds-text" id="frLovePatternM"></div></div>
+    <div class="ds-block"><div class="ds-label">結婚後の姿</div><div class="ds-text" id="frMarriageM"></div></div>
+    <div class="ds-block"><div class="ds-label">絶対に合わない相手のタイプ</div><div class="ds-text" id="frBadMatchM"></div></div></div>
+    <div class="detail-section"><div class="ds-header" style="border-left:3px solid #60a0e0;background:rgba(96,160,224,.04)">💼 仕事適正レポート</div>
+    <div class="ds-block"><div class="ds-label">向いている仕事・職種</div><ul class="ds-list" id="frJobsM"></ul></div>
+    <div class="ds-block"><div class="ds-label">仕事上の強み</div><div class="ds-text" id="frWorkStrongM"></div></div>
+    <div class="ds-block"><div class="ds-label">職場でのあるある</div><ul class="ds-list aru" id="frWorkAruM"></ul></div>
+    <div class="ds-block"><div class="ds-label">上司・部下・同僚との相性</div><div class="ds-text" id="frWorkRelM"></div></div></div>
+    <div class="detail-section"><div class="ds-header" style="border-left:3px solid var(--night2);background:rgba(192,132,232,.04)">🌙 夜の本性・深層欲求</div>
+    <div class="ds-block"><div class="ds-label">本当に求めているもの</div><div class="ds-text" id="frDeepDesireM"></div></div>
+    <div class="ds-block"><div class="ds-label">満たされないと出る行動</div><div class="ds-text" id="frUnmetM"></div></div>
+    <div class="ds-block"><div class="ds-label">夜の相性が最高になる条件</div><div class="ds-text" id="frBestCondM"></div></div></div>
+  </div>
+
   <div class="btn-stack">
     <button class="btn btn-chain" onclick="copyMyInviteFromMatch()">💌 別の人との相性も見る</button>
     <button class="btn btn-sns" onclick="copyShareText()">📱 この結果をSNSにポスト</button>
@@ -955,6 +1006,14 @@ function showMatch(){
   const gr=GRADES.find(g=>tot>=g.min);
 
   show('match');
+  // 自分の動物タイプをmatch画面にも表示
+  document.getElementById('msDayEmoji').textContent=dab.emoji;
+  document.getElementById('msDayAnimal').textContent=dab.animal;
+  document.getElementById('msDayType').textContent=dab.type+' · '+getDaySub(myDay);
+  document.getElementById('msNightEmoji').textContent=nab.emoji;
+  document.getElementById('msNightAnimal').textContent=nab.animal;
+  document.getElementById('msNightType').textContent=nab.type+' · '+getNightSub(myNight);
+  checkUnlockedMatch();
 
   ['scDay','scNight','scTotal'].forEach((id,i)=>{
     const tg=[ds2,ns2,tot][i],el=document.getElementById(id);
@@ -1113,6 +1172,45 @@ function fillFullReport(){
   document.getElementById('frBestCond').textContent = r.bestCond;
 }
 
+window.unlockReportMatch=function(){
+  const raw=document.getElementById('codeInputMatch').value.toUpperCase().trim();
+  const err=document.getElementById('codeErrorMatch');
+  if(DEMO_CODES.has(raw)||/^DNT-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(raw)){
+    document.getElementById('paywallBlockMatch').style.display='none';
+    const fr=document.getElementById('fullReportMatch');fr.style.display='block';
+    fillFullReportMatch();fr.scrollIntoView({behavior:'smooth',block:'start'});
+    err.textContent='';
+    try{localStorage.setItem('dnt_unlocked_'+myDay+myNight,'1')}catch(e){}
+    toast('✦ フルレポートを解放しました');
+  }else{err.textContent='コードが正しくありません。';}
+};
+function fillFullReportMatch(){
+  const r=getFullReport(myDay,myNight);
+  document.getElementById('frLightM').innerHTML=r.light.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frShadowM').innerHTML=r.shadow.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frOutwardM').textContent=r.outward;
+  document.getElementById('frBlindM').textContent=r.blind;
+  document.getElementById('frIdealPartnerM').textContent=r.idealPartner;
+  document.getElementById('frLovePatternM').textContent=r.lovePattern;
+  document.getElementById('frMarriageM').textContent=r.marriage;
+  document.getElementById('frBadMatchM').textContent=r.badMatch;
+  document.getElementById('frJobsM').innerHTML=r.jobs.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frWorkStrongM').textContent=r.workStrong;
+  document.getElementById('frWorkAruM').innerHTML=r.workAru.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('frWorkRelM').textContent=r.workRel;
+  document.getElementById('frDeepDesireM').textContent=r.deepDesire;
+  document.getElementById('frUnmetM').textContent=r.unmet;
+  document.getElementById('frBestCondM').textContent=r.bestCond;
+}
+function checkUnlockedMatch(){
+  try{
+    if(myDay&&myNight&&localStorage.getItem('dnt_unlocked_'+myDay+myNight)){
+      document.getElementById('paywallBlockMatch').style.display='none';
+      document.getElementById('fullReportMatch').style.display='block';
+      fillFullReportMatch();
+    }
+  }catch(e){}
+}
 function checkUnlocked(){
   try{
     if(myDay && myNight && localStorage.getItem('dnt_unlocked_'+myDay+myNight)){
