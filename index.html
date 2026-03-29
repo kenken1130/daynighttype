@@ -194,6 +194,64 @@ body::after{content:'';position:fixed;bottom:-10%;right:-10%;width:40%;height:40
 .back-btn::before{content:'←';}
 .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:12px 24px;font-size:12px;letter-spacing:.15em;opacity:0;transition:all .3s;z-index:200;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* Paywall */
+.paywall-block{width:100%;margin-bottom:12px;background:linear-gradient(135deg,#0f0b18,#180e20);border:1px solid rgba(224,96,160,.3);padding:28px 20px;position:relative;overflow:hidden;}
+.paywall-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(224,96,160,.07),transparent 60%);pointer-events:none;}
+.pw-lock{font-size:36px;text-align:center;margin-bottom:10px;}
+.pw-title{font-family:'Zen Antique',serif;font-size:18px;letter-spacing:.15em;color:var(--white);text-align:center;margin-bottom:6px;}
+.pw-price{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:#e060a0;text-align:center;margin-bottom:20px;text-shadow:0 0 24px rgba(224,96,160,.4);}
+.pw-items{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.pw-item{font-size:13px;color:var(--text);letter-spacing:.04em;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);}
+.btn-pay{display:block;width:100%;padding:16px 20px;background:linear-gradient(135deg,#a02060,#e04080);color:white;font-family:'Zen Antique',serif;font-size:14px;letter-spacing:.2em;text-align:center;text-decoration:none;margin-bottom:20px;transition:all .25s;box-shadow:0 4px 24px rgba(200,60,100,.3);}
+.btn-pay:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(200,60,100,.45);}
+.pw-code-area{border-top:1px solid var(--border);padding-top:16px;}
+.pw-code-label{font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px;text-transform:uppercase;}
+.pw-code-row{display:flex;gap:8px;}
+.pw-code-input{flex:1;padding:12px 14px;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:'Playfair Display',serif;font-size:16px;letter-spacing:.15em;outline:none;text-transform:uppercase;}
+.pw-code-input:focus{border-color:rgba(224,96,160,.5);}
+.pw-code-btn{padding:12px 20px;background:linear-gradient(135deg,#7a50b0,#c060a0);color:white;border:none;font-family:'Zen Antique',serif;font-size:13px;letter-spacing:.15em;cursor:pointer;transition:all .2s;}
+.pw-code-btn:hover{opacity:.85;}
+.pw-code-error{font-size:12px;color:#e06060;margin-top:6px;letter-spacing:.1em;}
+.fr-badge{text-align:center;padding:10px 20px;background:linear-gradient(135deg,rgba(224,96,160,.15),rgba(155,127,212,.1));border:1px solid rgba(224,96,160,.3);font-family:'Playfair Display',serif;font-style:italic;font-size:12px;letter-spacing:.25em;color:#e060a0;margin-bottom:12px;width:100%;}
+.detail-section{width:100%;background:var(--card);border:1px solid var(--border);margin-bottom:12px;overflow:hidden;}
+.ds-header{padding:14px 20px;font-family:'Zen Antique',serif;font-size:13px;letter-spacing:.15em;color:var(--white);}
+.ds-header.d{border-left:3px solid var(--day);background:rgba(232,184,109,.04);}
+.ds-header.n{border-left:3px solid var(--night2);background:rgba(192,132,232,.04);}
+.ds-block{padding:14px 20px;border-top:1px solid var(--border);}
+.ds-label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.ds-text{font-size:13px;line-height:2;color:var(--text);letter-spacing:.04em;}
+.ds-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.ds-list li{font-size:13px;line-height:1.8;color:var(--text);letter-spacing:.03em;padding-left:16px;position:relative;}
+.ds-list li::before{content:'—';position:absolute;left:0;color:var(--muted);font-size:11px;}
+.ds-list.aru li::before{content:'→';}
+
+/* Paywall */
+.paywall-block{width:100%;margin-bottom:12px;background:linear-gradient(135deg,#0f0b18,#180e20);border:1px solid rgba(224,96,160,.3);padding:28px 20px;position:relative;overflow:hidden;}
+.paywall-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(224,96,160,.07),transparent 60%);pointer-events:none;}
+.pw-lock{font-size:36px;text-align:center;margin-bottom:10px;}
+.pw-title{font-family:'Zen Antique',serif;font-size:18px;letter-spacing:.15em;color:var(--white);text-align:center;margin-bottom:6px;}
+.pw-price{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:#e060a0;text-align:center;margin-bottom:20px;}
+.pw-items{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.pw-item{font-size:13px;color:var(--text);padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);}
+.btn-pay{display:block;width:100%;padding:16px 20px;background:linear-gradient(135deg,#a02060,#e04080);color:white;font-family:'Zen Antique',serif;font-size:14px;letter-spacing:.2em;text-align:center;text-decoration:none;margin-bottom:20px;transition:all .25s;}
+.btn-pay:hover{transform:translateY(-2px);}
+.pw-code-area{border-top:1px solid var(--border);padding-top:16px;}
+.pw-code-label{font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px;text-transform:uppercase;}
+.pw-code-row{display:flex;gap:8px;}
+.pw-code-input{flex:1;padding:12px 14px;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:'Playfair Display',serif;font-size:16px;letter-spacing:.15em;outline:none;text-transform:uppercase;}
+.pw-code-input:focus{border-color:rgba(224,96,160,.5);}
+.pw-code-btn{padding:12px 20px;background:linear-gradient(135deg,#7a50b0,#c060a0);color:white;border:none;font-family:'Zen Antique',serif;font-size:13px;cursor:pointer;}
+.pw-code-error{font-size:12px;color:#e06060;margin-top:6px;}
+.fr-badge{text-align:center;padding:10px 20px;background:linear-gradient(135deg,rgba(224,96,160,.15),rgba(155,127,212,.1));border:1px solid rgba(224,96,160,.3);font-family:'Playfair Display',serif;font-style:italic;font-size:12px;letter-spacing:.25em;color:#e060a0;margin-bottom:12px;width:100%;}
+.detail-section{width:100%;background:var(--card);border:1px solid var(--border);margin-bottom:12px;overflow:hidden;}
+.ds-header{padding:14px 20px;font-family:'Zen Antique',serif;font-size:13px;letter-spacing:.15em;color:var(--white);}
+.ds-block{padding:14px 20px;border-top:1px solid var(--border);}
+.ds-label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.ds-text{font-size:13px;line-height:2;color:var(--text);}
+.ds-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.ds-list li{font-size:13px;line-height:1.8;color:var(--text);padding-left:16px;position:relative;}
+.ds-list li::before{content:'—';position:absolute;left:0;color:var(--muted);}
+.ds-list.aru li::before{content:'→';}
 </style>
 </head>
 <body>
@@ -287,7 +345,105 @@ body::after{content:'';position:fixed;bottom:-10%;right:-10%;width:40%;height:40
  <div class="ar-desc" id="sNightDesc"></div>
  </div>
  </div>
- <div class="chain-block">
+<div class="paywall-block" id="paywallBlock">
+ <div class="pw-lock">🔒</div>
+ <div class="pw-title">フルレポートを解放する</div>
+ <div class="pw-price">¥300</div>
+ <div class="pw-items">
+ <div class="pw-item">📊 詳細性格分析（光と影の両面）</div>
+ <div class="pw-item">💑 恋愛・結婚の深層心理</div>
+ <div class="pw-item">💼 仕事適正＆向いてる職種</div>
+ <div class="pw-item">⚠️ あなたが持つ「地雷」全公開</div>
+ <div class="pw-item">🌙 夜の本性・深層欲求レポート</div>
+ </div>
+ <a class="btn btn-pay" href="https://buy.stripe.com/XXXXXXXX" target="_blank" id="stripeLink">
+ クレジットカードで解放する ¥300
+ </a>
+ <div class="pw-code-area">
+ <div class="pw-code-label">購入後に届くコードを入力</div>
+ <div class="pw-code-row">
+ <input class="pw-code-input" id="codeInput" placeholder="例: DNT-XXXX-XXXX" maxlength="14">
+ <button class="pw-code-btn" onclick="unlockReport()">解放</button>
+ </div>
+ <div class="pw-code-error" id="codeError"></div>
+ </div>
+</div>
+
+<div class="full-report" id="fullReport" style="display:none">
+ <div class="fr-badge">✦ プレミアムレポート解放済み</div>
+ <div class="detail-section">
+ <div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">📊 詳細性格分析</div>
+ <div class="ds-block"><div class="ds-label">光の面（強み）</div><ul class="ds-list" id="frLight"></ul></div>
+ <div class="ds-block"><div class="ds-label">影の面（弱み・地雷）</div><ul class="ds-list" id="frShadow"></ul></div>
+ <div class="ds-block"><div class="ds-label">他者からどう見られているか</div><div class="ds-text" id="frOutward"></div></div>
+ <div class="ds-block"><div class="ds-label">本人が気づいていない自分</div><div class="ds-text" id="frBlind"></div></div>
+ </div>
+ <div class="detail-section">
+ <div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">💑 恋愛・結婚の深層心理</div>
+ <div class="ds-block"><div class="ds-label">理想のパートナー像</div><div class="ds-text" id="frIdealPartner"></div></div>
+ <div class="ds-block"><div class="ds-label">恋愛で繰り返すパターン</div><div class="ds-text" id="frLovePattern"></div></div>
+ <div class="ds-block"><div class="ds-label">結婚後の姿</div><div class="ds-text" id="frMarriage"></div></div>
+ <div class="ds-block"><div class="ds-label">絶対に合わない相手のタイプ</div><div class="ds-text" id="frBadMatch"></div></div>
+ </div>
+ <div class="detail-section">
+ <div class="ds-header" style="border-left:3px solid #60a0e0;background:rgba(96,160,224,.04)">💼 仕事適正レポート</div>
+ <div class="ds-block"><div class="ds-label">向いている仕事・職種</div><ul class="ds-list" id="frJobs"></ul></div>
+ <div class="ds-block"><div class="ds-label">仕事上の強み</div><div class="ds-text" id="frWorkStrong"></div></div>
+ <div class="ds-block"><div class="ds-label">職場でのあるある行動</div><ul class="ds-list aru" id="frWorkAru"></ul></div>
+ <div class="ds-block"><div class="ds-label">上司・部下・同僚との相性</div><div class="ds-text" id="frWorkRel"></div></div>
+ </div>
+ <div class="detail-section">
+ <div class="ds-header" style="border-left:3px solid var(--night2);background:rgba(192,132,232,.04)">🌙 夜の本性・深層欲求</div>
+ <div class="ds-block"><div class="ds-label">本当に求めているもの</div><div class="ds-text" id="frDeepDesire"></div></div>
+ <div class="ds-block"><div class="ds-label">満たされないと出る行動</div><div class="ds-text" id="frUnmet"></div></div>
+ <div class="ds-block"><div class="ds-label">夜の相性が最高になる条件</div><div class="ds-text" id="frBestCond"></div></div>
+ </div>
+</div>
+
+ <div class="paywall-block" id="paywallBlock">
+ <div class="pw-lock">🔒</div>
+ <div class="pw-title">フルレポートを解放する</div>
+ <div class="pw-price">¥300</div>
+ <div class="pw-items">
+ <div class="pw-item">📊 詳細性格分析（光と影の両面）</div>
+ <div class="pw-item">💑 恋愛・結婚の深層心理</div>
+ <div class="pw-item">💼 仕事適正＆向いてる職種</div>
+ <div class="pw-item">⚠️ あなたが持つ「地雷」全公開</div>
+ <div class="pw-item">🌙 夜の本性・深層欲求レポート</div>
+ </div>
+ <a class="btn btn-pay" href="https://buy.stripe.com/XXXXXXXX" target="_blank" id="stripeLink">クレジットカードで解放する ¥300</a>
+ <div class="pw-code-area">
+ <div class="pw-code-label">購入後に届くコードを入力</div>
+ <div class="pw-code-row">
+ <input class="pw-code-input" id="codeInput" placeholder="例: DNT-XXXX-XXXX" maxlength="14">
+ <button class="pw-code-btn" onclick="unlockReport()">解放</button>
+ </div>
+ <div class="pw-code-error" id="codeError"></div>
+ </div>
+</div>
+<div class="full-report" id="fullReport" style="display:none">
+ <div class="fr-badge">✦ プレミアムレポート解放済み</div>
+ <div class="detail-section"><div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">📊 詳細性格分析</div>
+ <div class="ds-block"><div class="ds-label">光の面</div><ul class="ds-list" id="frLight"></ul></div>
+ <div class="ds-block"><div class="ds-label">影の面・地雷</div><ul class="ds-list" id="frShadow"></ul></div>
+ <div class="ds-block"><div class="ds-label">他者からどう見られているか</div><div class="ds-text" id="frOutward"></div></div>
+ <div class="ds-block"><div class="ds-label">本人が気づいていない自分</div><div class="ds-text" id="frBlind"></div></div></div>
+ <div class="detail-section"><div class="ds-header" style="border-left:3px solid #e060a0;background:rgba(224,96,160,.04)">💑 恋愛・結婚の深層心理</div>
+ <div class="ds-block"><div class="ds-label">理想のパートナー像</div><div class="ds-text" id="frIdealPartner"></div></div>
+ <div class="ds-block"><div class="ds-label">恋愛で繰り返すパターン</div><div class="ds-text" id="frLovePattern"></div></div>
+ <div class="ds-block"><div class="ds-label">結婚後の姿</div><div class="ds-text" id="frMarriage"></div></div>
+ <div class="ds-block"><div class="ds-label">絶対に合わない相手のタイプ</div><div class="ds-text" id="frBadMatch"></div></div></div>
+ <div class="detail-section"><div class="ds-header" style="border-left:3px solid #60a0e0;background:rgba(96,160,224,.04)">💼 仕事適正レポート</div>
+ <div class="ds-block"><div class="ds-label">向いている仕事・職種</div><ul class="ds-list" id="frJobs"></ul></div>
+ <div class="ds-block"><div class="ds-label">仕事上の強み</div><div class="ds-text" id="frWorkStrong"></div></div>
+ <div class="ds-block"><div class="ds-label">職場でのあるある</div><ul class="ds-list aru" id="frWorkAru"></ul></div>
+ <div class="ds-block"><div class="ds-label">上司・部下・同僚との相性</div><div class="ds-text" id="frWorkRel"></div></div></div>
+ <div class="detail-section"><div class="ds-header" style="border-left:3px solid var(--night2);background:rgba(192,132,232,.04)">🌙 夜の本性・深層欲求</div>
+ <div class="ds-block"><div class="ds-label">本当に求めているもの</div><div class="ds-text" id="frDeepDesire"></div></div>
+ <div class="ds-block"><div class="ds-label">満たされないと出る行動</div><div class="ds-text" id="frUnmet"></div></div>
+ <div class="ds-block"><div class="ds-label">夜の相性が最高になる条件</div><div class="ds-text" id="frBestCond"></div></div></div>
+</div>
+<div class="chain-block">
  <div class="cb-tag">💌 気になる人に送る</div>
  <div class="cb-title">相性を確かめたい人に送ろう</div>
  <div class="cb-sub">リンクを開いて診断するだけで<br>2人の相性がその場で表示されます</div>
@@ -490,7 +646,7 @@ function showSolo(){
  document.getElementById('sNightAnimal').textContent=na.animal;
  document.getElementById('sNightType').textContent=na.type+' · '+getNightSub(myNight);
  document.getElementById('sNightDesc').textContent=na.desc;
- show('solo');
+ show('solo');checkUnlocked();
 }
 
 function makeInviteUrl(){return location.href.split('?')[0]+'?a='+myDay+myNight;}
@@ -554,6 +710,19 @@ window.copyShareText=function(){
 };
 
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+const FULL_REPORT={
+'LWWL':{light:['目標から逆算して動ける戦略的思考力','どんな逆境でも折れない根性と忍耐力','言葉に重みがあり一度発言すると周囲が自然に動く','感情に流されない安定したリーダーシップ'],shadow:['正しさへの執着が強く融通が利かない場面がある','相手が期待通りに動かないと内側でイライラを溜め込む','弱さを見せることを「負け」と感じてしまう'],outward:'「頼れる人」「この人なら任せられる」という印象。実力者からも一目置かれるが親しみにくいと感じられることも多い。',blind:'自分が周囲に与えているプレッシャーに全く気づいていない。無言のオーラが滲み出ており周囲は常に気を遣っている。',idealPartner:'自分の世界観を理解しつつ対等に意見を言える人。知的刺激と安心感を同時に与えてくれる自立した存在。',lovePattern:'最初は慎重に観察し確信が持てたら一気に動く。一度好きになると独占欲が爆発し過保護になりやすい。',marriage:'家族への責任感は圧倒的。ただし家庭でもリーダー気質が抜けず定期的な「何も求めない時間」の確保が関係継続のカギ。',badMatch:'感情的で気分の波が激しい人。言動の一貫性がない人には強いストレスを感じる。',jobs:['経営者・管理職','プロジェクトマネージャー','弁護士・コンサルタント','医師・専門職'],workStrong:'締め切りと目標に対して圧倒的な強さを持つ。チームが迷走しているとき誰よりも早く正確に舵を切れる。',workAru:['「それ意味ある？」と言いたいのを我慢してる会議が週3回ある','仕事とプライベートのスイッチを切り替えられてると思っているが実はできていない'],workRel:'上司には「結果で黙らせる」スタイル。部下には高い基準を求めるが認めると全力でフォローする。',deepDesire:'「誰かにただ甘えたい」という深い欲求。夜だけは鎧を脱いで誰かに委ねたいと思っている。',unmet:'支配・リードできない状況が続くと言葉数が減り態度が冷たくなる。',bestCond:'相手が完全に信頼して身を委ねてくれたとき。「あなたしかいない」と言われる瞬間に本領発揮。'},
+'LWTF':{light:['冷静な判断力と夜だけ見せる純粋な甘えのギャップが最大の魅力','昼と夜のON/OFFが美しいほど明確','自分に厳しいからこそ相手への甘えが本物に見える'],shadow:['甘えたい欲求を昼間は完全に封印するため夜に突然爆発することがある','「察してほしい」気持ちが強いが相手が気づけない'],outward:'昼間は完璧な人間に見える。夜のギャップを知っている人は「あの人にそんな一面が」と驚く。',blind:'自分の「甘えたいサイン」が相手に全く伝わっていないことに気づいていない。',idealPartner:'昼間の自分を尊重しつつ夜だけは無条件に受け止めてくれる人。',lovePattern:'好きな人の前でだけ妙にそっけなくなる。結果的に「脈なし」と思われるループにはまりやすい。',marriage:'家に帰ると意外なほど甘えん坊になる。「仕事の顔と全然違う」とよく言われる。',badMatch:'感情で押してくる人、気分で動く人。論理が通じない人との関係は続かない。',jobs:['研究職・エンジニア','戦略コンサルタント','データアナリスト','医師・薬剤師'],workStrong:'一人で深く考える作業が圧倒的に得意。完成度の高い成果物で周囲を黙らせる。',workAru:['資料の完成度が高すぎてプレゼン本番より準備に力が入っている','「これで合ってる」と言われても自分でもう一度確認しないと気が済まない'],workRel:'感情的に叱責されると頭が真っ白になる。部下には丁寧に指導するが細かすぎることがある。',deepDesire:'「全部委ねてもいい」と思える安全な場所と人を本能的に求め続けている。',unmet:'甘えられる環境がないと表情が硬くなり小さなことでイライラが増える。',bestCond:'相手が優しく先導してくれるとき。「俺（私）に任せて」と言われると一瞬で全部解ける。'},
+'EWWL':{light:['情熱と本能が共鳴しどこにいても存在感が爆発する','昼も夜も全力投球で偽物感がゼロ','場の空気を変える能力が圧倒的'],shadow:['感情の振れ幅が大きく周囲がペースを掴みにくい','テンションの高低差が激しすぎて相手が疲弊することがある'],outward:'「あの人、面白い」「一緒にいると何か起きそう」という印象。波が激しいので距離感が難しいと感じる人も多い。',blind:'自分のテンションが周囲に与えるプレッシャーに気づいていない。',idealPartner:'自分の熱量を受け止めてさらに返してくれる人。一緒にいて温度が上がる相手。',lovePattern:'瞬間で動く。全力で愛するが相手が冷めたと感じた瞬間に急激に引く。',marriage:'家庭は明るくエネルギッシュ。マンネリをどう防ぐかが結婚継続の最大のカギ。',badMatch:'反応が薄い人、温度が読めない人。一緒にいても温度が上がらないと距離を置く。',jobs:['営業・販売職','起業家・事業家','俳優・タレント','コーチ・トレーナー'],workStrong:'クライアントを本気にさせる力。初対面でも5分で打ち解ける。組織の起爆剤になれる。',workAru:['メールより電話、電話より直接話しに行く方が早いと信じている','プレゼンは資料より熱量で乗り切るスタイル'],workRel:'上司には「まずやってみます」で動く。部下の熱量を引き出すのが得意。',deepDesire:'誰かに完全にリードされ何も考えずに感じることだけに集中したい。',unmet:'刺激がない状態が続くと無意識に「事件」を起こしてしまう。',bestCond:'相手が全力で向き合ってくれるとき。「あなたのことだけ考えてる」という状況に最も燃え上がる。'},
+'EPTF':{light:['相手の気持ちを敏感に感じ取る共感力','無防備な甘えが相手の保護欲を刺激する天性の魅力','自分を犠牲にしても大切な人のために動ける誠実さ'],shadow:['「察してほしい」欲求と「言えない」性格が組み合わさり気づいたら溜め込んでいる','NOが言えず嫌なことも受け入れてしまう癖がある'],outward:'「優しい人」「守ってあげたくなる」という印象を強く与える。頼られると断れないため便利に使われるリスクも。',blind:'自分が相手に対してかなり強い依存心を持っていること。「一人でも大丈夫」と言いながら一人が一番不安。',idealPartner:'「ここにいていいよ」と言葉より態度で示してくれる包容力のある存在。',lovePattern:'好きな人の周りをウロウロして相手が気づくのを待つ。付き合うと相手にどっぷりはまる。',marriage:'パートナーと子供のために全力で動く。自分の気持ちを後回しにし続けないよう意識が必要。',badMatch:'自分のことしか考えない人、感謝を当然と思う人。与え続けても報われない関係は自分を壊す。',jobs:['看護師・介護職','カウンセラー','保育士・教師','接客・サービス職'],workStrong:'職場の人間関係の調整役。誰かが困っているとすぐ気づき動ける。チームの空気を整える縁の下の力持ち。',workAru:['「ちょっといいですか？」と声をかけられるとどれだけ忙しくても断れない','感謝されると全部報われた気分になってまた頑張ってしまう'],workRel:'上司からは「なんでも頼める子」と思われている。部下には優しすぎて舐められることがある。',deepDesire:'「あなただけでいい」と言って全力で求めてくれる人。夜だけは自分が中心になりたい。',unmet:'愛情確認ができないと不安が増大する。ひたすら相手の態度を観察してしまう。',bestCond:'相手が積極的にリードしてくれるとき。「俺（私）が全部やる」という姿勢に最も安心して心が開ける。'},
+};
+function getFullReport(d,n){const k=d.slice(0,2)+n.slice(0,2);if(FULL_REPORT[k])return FULL_REPORT[k];const f=Object.keys(FULL_REPORT);return FULL_REPORT[f.find(x=>x.startsWith(d.slice(0,2)))||f[0]];}
+const DEMO_CODES=new Set(['DNT-0000-0000','DNT-1234-5678','DNT-DEMO-2024','DNT-TEST-0001']);
+window.unlockReport=function(){const raw=document.getElementById('codeInput').value.toUpperCase().trim();const err=document.getElementById('codeError');if(DEMO_CODES.has(raw)||/^DNT-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(raw)){document.getElementById('paywallBlock').style.display='none';const fr=document.getElementById('fullReport');fr.style.display='block';fillFullReport();fr.scrollIntoView({behavior:'smooth',block:'start'});err.textContent='';try{localStorage.setItem('dnt_unlocked_'+myDay+myNight,'1')}catch(e){}toast('✦ フルレポートを解放しました');}else{err.textContent='コードが正しくありません。購入後のメールをご確認ください。';}};
+function fillFullReport(){const r=getFullReport(myDay,myNight);document.getElementById('frLight').innerHTML=r.light.map(s=>`<li>${s}</li>`).join('');document.getElementById('frShadow').innerHTML=r.shadow.map(s=>`<li>${s}</li>`).join('');document.getElementById('frOutward').textContent=r.outward;document.getElementById('frBlind').textContent=r.blind;document.getElementById('frIdealPartner').textContent=r.idealPartner;document.getElementById('frLovePattern').textContent=r.lovePattern;document.getElementById('frMarriage').textContent=r.marriage;document.getElementById('frBadMatch').textContent=r.badMatch;document.getElementById('frJobs').innerHTML=r.jobs.map(s=>`<li>${s}</li>`).join('');document.getElementById('frWorkStrong').textContent=r.workStrong;document.getElementById('frWorkAru').innerHTML=r.workAru.map(s=>`<li>${s}</li>`).join('');document.getElementById('frWorkRel').textContent=r.workRel;document.getElementById('frDeepDesire').textContent=r.deepDesire;document.getElementById('frUnmet').textContent=r.unmet;document.getElementById('frBestCond').textContent=r.bestCond;}
+function checkUnlocked(){try{if(myDay&&myNight&&localStorage.getItem('dnt_unlocked_'+myDay+myNight)){document.getElementById('paywallBlock').style.display='none';document.getElementById('fullReport').style.display='block';fillFullReport();}}catch(e){}}
+
 </script>
 </body>
 </html>
